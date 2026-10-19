@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Albums · Song Ratings</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <header id="site-header" class="site-header"></header>
+
+  <main class="container">
+    <div class="page-head">
+      <h1>Albums</h1>
+      <p id="result-count" class="muted"></p>
+      <div class="page-actions">
+        <button id="export-button" class="button">Export backup</button>
+        <button id="import-button" class="button">Import</button>
+        <input id="import-file" type="file" accept="application/json,.json" hidden>
+      </div>
+    </div>
+
+    <div class="filters">
+      <input id="search" type="search" placeholder="Search album, artist, song…" aria-label="Search albums">
+      <select id="genre" aria-label="Filter by genre">
+        <option value="">All genres</option>
+      </select>
+      <select id="sort" aria-label="Sort albums">
+        <option value="recent">Recently rated</option>
+        <option value="rating-desc">Highest average</option>
+        <option value="rating-asc">Lowest average</option>
+        <option value="title-asc">Title A–Z</option>
+        <option value="artist-asc">Artist A–Z</option>
+        <option value="year-desc">Release year</option>
+      </select>
+    </div>
+
+    <div id="albums-grid" class="album-grid"></div>
+  </main>
+
+  <footer id="site-footer" class="site-footer"></footer>
+
+  <script src="js/store.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/pages/albums.js"></script>
+</body>
+</html>

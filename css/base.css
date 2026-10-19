@@ -1,0 +1,141 @@
+/* Design tokens, reset, and typography. Change the look of the site here.
+   Styled after Apple Music: SF system font, pink-red key color, translucent
+   materials, and automatic light/dark mode. */
+
+:root {
+  /* Light mode */
+  --bg: #ffffff;
+  --bg-translucent: rgb(255 255 255 / 0.72);
+  --surface: rgb(118 118 128 / 0.08);
+  --surface-hover: rgb(118 118 128 / 0.14);
+  --fill: rgb(118 118 128 / 0.12);
+  --stripe: rgb(0 0 0 / 0.03);
+  --border: rgb(60 60 67 / 0.18);
+  --text: #1d1d1f;
+  --text-muted: rgb(60 60 67 / 0.6);
+  --accent: #fa233b;
+  --accent-hover: #e01e34;
+  --focus-ring: rgb(250 35 59 / 0.4);
+  --on-accent: #ffffff;
+  --cover-shadow: 0 4px 14px rgb(0 0 0 / 0.12);
+  --cover-edge: inset 0 0 0 0.5px rgb(0 0 0 / 0.1);
+
+  --tier-great: #34c759;
+  --tier-good: #a4cf3c;
+  --tier-okay: #ff9f0a;
+  --tier-bad: #ff3b30;
+  --on-tier: rgb(0 0 0 / 0.82);
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-cover: 6px;
+  --max-width: 1180px;
+  --gutter: clamp(16px, 4vw, 40px);
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons",
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1f1f1f;
+    --bg-translucent: rgb(31 31 31 / 0.72);
+    --surface: rgb(255 255 255 / 0.05);
+    --surface-hover: rgb(255 255 255 / 0.09);
+    --fill: rgb(118 118 128 / 0.24);
+    --stripe: rgb(255 255 255 / 0.035);
+    --border: rgb(84 84 88 / 0.6);
+    --text: rgb(255 255 255 / 0.92);
+    --text-muted: rgb(235 235 245 / 0.6);
+    --accent: #fa586a;
+    --accent-hover: #fb6d7d;
+    --focus-ring: rgb(250 88 106 / 0.45);
+    --cover-shadow: 0 4px 18px rgb(0 0 0 / 0.45);
+    --cover-edge: inset 0 0 0 0.5px rgb(255 255 255 / 0.1);
+
+    --tier-great: #30d158;
+    --tier-good: #a8d64a;
+    --tier-okay: #ffb340;
+    --tier-bad: #ff453a;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.47;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  line-height: 1.15;
+  margin: 0 0 0.5em;
+}
+
+h1 { font-size: clamp(1.9rem, 4vw, 2.5rem); font-weight: 700; letter-spacing: -0.025em; }
+h2 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
+h3 { font-size: 1rem; font-weight: 600; letter-spacing: -0.01em; }
+
+p { margin: 0 0 1em; }
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+input,
+select {
+  font: inherit;
+  color: var(--text);
+  background-color: var(--fill);
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 0.55em 0.85em;
+}
+
+input::placeholder { color: var(--text-muted); }
+
+select {
+  appearance: none;
+  padding-right: 2.2em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238e8e93' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85em center;
+  cursor: pointer;
+}
+
+input:focus,
+select:focus,
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.muted { color: var(--text-muted); }

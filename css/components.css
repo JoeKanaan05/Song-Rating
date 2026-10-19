@@ -1,0 +1,530 @@
+/* Reusable pieces: cards, rating badges, covers, tracklist, detail pages. */
+
+/* Stats */
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  min-width: 140px;
+  padding: 0.9rem 1.2rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label { color: var(--text-muted); font-size: 0.8rem; font-weight: 500; }
+
+.section-link { font-weight: 400; font-size: 0.95rem; }
+.section-link:hover { text-decoration: underline; }
+
+/* Covers */
+.cover {
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--radius-cover);
+  background: var(--fill);
+  box-shadow: var(--cover-edge);
+  flex-shrink: 0;
+}
+
+.cover-sm { width: 44px; border-radius: 4px; }
+.cover-md { width: 100%; box-shadow: var(--cover-edge), var(--cover-shadow); }
+.cover-lg {
+  width: min(270px, 100%);
+  border-radius: 10px;
+  box-shadow: var(--cover-edge), 0 10px 40px rgb(0 0 0 / 0.25);
+}
+
+.cover-placeholder {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--hue) 70% 55%),
+    hsl(calc(var(--hue) + 50) 65% 35%)
+  );
+  color: rgb(255 255 255 / 0.9);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2.5rem;
+}
+
+.cover-sm.cover-placeholder { font-size: 1rem; }
+.cover-lg.cover-placeholder { font-size: 5rem; }
+
+/* Rating badge */
+.rating-badge {
+  display: inline-grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  border-radius: 6px;
+  color: var(--on-tier);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.rating-sm { min-width: 38px; padding: 0.1em 0.45em; font-size: 0.8rem; }
+.rating-md { min-width: 44px; padding: 0.2em 0.5em; font-size: 0.95rem; }
+.rating-lg { min-width: 110px; padding: 0.25em 0.5em; font-size: 3rem; border-radius: var(--radius); }
+
+.tier-great { background: var(--tier-great); }
+.tier-good  { background: var(--tier-good); }
+.tier-okay  { background: var(--tier-okay); }
+.tier-bad   { background: var(--tier-bad); }
+.tier-none  { background: var(--fill); color: var(--text-muted); }
+
+/* Progress (tracks rated) */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.progress-bar {
+  flex: 1;
+  max-width: 200px;
+  height: 3px;
+  background: var(--fill);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+.progress-label {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+/* Album card (grid): just artwork and text, like an Apple Music shelf */
+.album-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  color: inherit;
+}
+
+.album-card .cover { transition: filter 0.2s; }
+.album-card:hover .cover { filter: brightness(0.82); }
+
+.album-card .rating-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.3);
+}
+
+.album-card .tier-none {
+  background: rgb(30 30 30 / 0.55);
+  color: rgb(255 255 255 / 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.album-card-body { min-width: 0; line-height: 1.3; }
+
+.album-title,
+.song-title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.album-artist,
+.song-artist {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Song row (ranked list) */
+.song-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: var(--radius-sm);
+  color: inherit;
+}
+
+.song-row:hover { background: var(--surface-hover); }
+
+.song-rank {
+  width: 1.5rem;
+  text-align: right;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.song-row-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.song-row-body .song-artist { font-size: 0.82rem; }
+
+/* Tracklist (album page): striped rows like Apple Music */
+.tracklist {
+  margin-top: 2rem;
+}
+
+.tracklist-head,
+.track-row {
+  display: grid;
+  grid-template-columns: 2rem 1fr auto 3.5rem;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.55rem 0.75rem;
+}
+
+.tracklist-head {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.tracklist-head span:first-child,
+.track-number { text-align: right; }
+
+.tracklist-head span:last-child { text-align: center; }
+
+.track-row {
+  border-radius: var(--radius-sm);
+  color: var(--text);
+}
+
+.track-row:nth-of-type(odd) { background: var(--stripe); }
+.track-row:hover { background: var(--surface-hover); }
+
+.track-number,
+.track-duration {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.88rem;
+}
+
+.track-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-row.unrated .track-title { color: var(--text-muted); }
+.track-row.unrated:hover .track-title { color: var(--text); }
+
+/* Filters */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.75rem;
+}
+
+.filters input { flex: 1 1 260px; }
+.filters select { flex: 0 1 auto; }
+
+.empty-state {
+  grid-column: 1 / -1;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* Album & song detail pages */
+.back-link {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.back-link:hover { text-decoration: underline; }
+
+.detail-hero {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 2rem;
+  align-items: end;
+  padding-bottom: 1.5rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.4rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.detail-hero h1 { margin-bottom: 0.2rem; }
+
+.detail-hero-artist {
+  margin: 0;
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.detail-hero-sub { color: var(--text-muted); margin: 0.25rem 0 1rem; }
+
+.detail-hero-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.score-label { color: var(--text-muted); font-size: 0.8rem; }
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tag {
+  padding: 0.2em 0.75em;
+  background: var(--fill);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.review {
+  max-width: 720px;
+  padding-top: 1.5rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.review-date {
+  margin-top: 2rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.track-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 0.5px solid var(--border);
+}
+
+.track-nav a:hover { text-decoration: underline; }
+
+/* About page scale */
+.scale {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.scale li {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.scale .rating-badge { min-width: 64px; }
+
+@media (max-width: 720px) {
+  .detail-hero {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .detail-hero-score {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+
+  .rating-lg { font-size: 2.2rem; min-width: 90px; }
+
+  .tracklist-head,
+  .track-row { gap: 0.6rem; padding-inline: 0.4rem; }
+}
+
+/* Buttons: filled accent for primary, gray fill with accent text otherwise */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  padding: 0.5em 1.1em;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--accent);
+  background: var(--fill);
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.button:hover { background: var(--surface-hover); }
+.button:active { transform: scale(0.97); }
+
+.button-primary {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.button-primary:hover { background: var(--accent-hover); }
+
+.button-danger { color: var(--tier-bad); }
+
+.nav-add { margin-left: 0.6rem; padding-block: 0.35em; font-size: 0.85rem; }
+
+.page-actions {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.empty-state .button { margin-top: 0.5rem; }
+
+.detail-hero-score .button { margin-top: 0.5rem; }
+
+.danger-zone {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 0.5px solid var(--border);
+}
+
+/* Search results (Add page) */
+.search-result {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.add-hint {
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Rating form */
+.rate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 720px;
+  padding-top: 1.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.field-label { font-weight: 600; font-size: 0.85rem; }
+
+.field textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--fill);
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 0.7em 0.9em;
+  resize: vertical;
+}
+
+.field textarea:focus { outline: 3px solid var(--focus-ring); outline-offset: 1px; }
+
+.score-input {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.score-input input[type="range"] {
+  flex: 1;
+  padding: 0;
+  border: 0;
+  background: none;
+  accent-color: var(--accent);
+}
+
+.score-input input[type="number"] { width: 5.5em; }
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .nav-add { margin-left: 0.25rem; padding-inline: 0.7em; }
+  .score-input { flex-wrap: wrap; }
+  .score-input input[type="range"] { flex-basis: 100%; }
+}
+
+/* Shown when the local server isn't running */
+.server-warning {
+  padding: 0.9rem var(--gutter);
+  background: var(--tier-bad);
+  color: #fff;
+  text-align: center;
+}
+
+.server-warning a { color: #fff; text-decoration: underline; }
+
+.server-warning code {
+  padding: 0.1em 0.4em;
+  background: rgb(0 0 0 / 0.25);
+  border-radius: 4px;
+}
