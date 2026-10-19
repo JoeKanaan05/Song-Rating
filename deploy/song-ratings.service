@@ -1,0 +1,17 @@
+# systemd service that runs the site on the Raspberry Pi and restarts it on
+# boot or crash. Install steps are in README.md ("Put it on a Raspberry Pi").
+# Change User= to your Pi username.
+
+[Unit]
+Description=Song Ratings website
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=pi
+WorkingDirectory=/var/www/song_rating
+ExecStart=/usr/bin/python3 /var/www/song_rating/server.py --host 127.0.0.1 --port 8000 --no-browser
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

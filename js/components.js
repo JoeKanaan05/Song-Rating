@@ -111,5 +111,15 @@ function songRowHTML(song, rank) {
     </a>`;
 }
 
+/* Lets the site be installed as an app and work offline (see sw.js). */
+function registerServiceWorker() {
+  if ("serviceWorker" in navigator && window.isSecureContext) {
+    navigator.serviceWorker.register("sw.js").catch((err) => {
+      console.warn("Service worker not registered:", err);
+    });
+  }
+}
+
 document.addEventListener("DOMContentLoaded", renderHeader);
 whenReady(renderFooter);
+window.addEventListener("load", registerServiceWorker);

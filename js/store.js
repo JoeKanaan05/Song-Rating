@@ -1,51 +1,31 @@
 /*
- * Saves and loads your albums and ratings through the local server
- * (server.py), which writes them to data/ratings.json.
+ * Saves and loads your albums and ratings in this browser's storage
+ * (localStorage), so each device keeps its own ratings. Use Export backup /
+ * Import on the Albums page to move them between devices.
  *
  * Album shape:
  *   { id, source, sourceId, title, artist, year, genre, cover, review?,
  *     tracks: [{ title, duration, sourceId, rating?, dateRated?, tags?, review? }] }
  */
 
-const API_URL = "/api/albums";
-const LEGACY_STORAGE_KEY = "songRatings.albums";
+const STORAGE_KEY = "songRatings.albums";
 
-/* Filled in once the server responds; every other script reads from ALBUMS. */
+/* Every other script reads from ALBUMS. */
 const ALBUMS = [];
 
-async function loadAlbums() {
-  if (window.location.protocol === "file:") {
-    throw new Error("The site was opened as a file.");
-  }
-  const response = await fetch(API_URL, { cache: "no-store" });
-  if (!response.ok) throw new Error(`Server error ${response.status}`);
-  ALBUMS.push(...(await response.json()));
-  await migrateFromLocalStorage();
+function loadAlbums() {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  if (Array.isArray(saved)) ALBUMS.push(...saved);
+  // Ask the browser not to clear our storage when space runs low.
+  navigator.storage?.persist?.().catch(() => {});
 }
 
-/* One-time move of ratings saved by the older browser-storage version. */
-async function migrateFromLocalStorage() {
-  let legacy;
-  try {
-    legacy = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY));
-  } catch {
-    return;
-  }
-  if (!Array.isArray(legacy) || !legacy.length) return;
-
-  legacy
-    .filter((album) => !ALBUMS.some((a) => a.id === album.id))
-    .forEach((album) => ALBUMS.push(album));
-  await saveAlbums();
-  localStorage.removeItem(LEGACY_STORAGE_KEY);
-}
-
-const storeReady = loadAlbums().catch((err) => {
+const storeReady = Promise.resolve().then(loadAlbums).catch((err) => {
   console.error("Could not load ratings:", err);
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", showServerWarning);
+    document.addEventListener("DOMContentLoaded", showStorageWarning);
   } else {
-    showServerWarning();
+    showStorageWarning();
   }
   throw err;
 });
@@ -57,26 +37,22 @@ function whenReady(setup) {
   });
 }
 
-function showServerWarning() {
+function showStorageWarning() {
   const banner = document.createElement("div");
-  banner.className = "server-warning";
+  banner.className = "storage-warning";
   banner.innerHTML = `
-    <strong>Can't reach your ratings.</strong>
-    Start the server from the project folder with
-    <code>python3 server.py</code>, then open
-    <a href="http://localhost:8000">http://localhost:8000</a>.`;
+    <strong>Can't load your ratings.</strong>
+    This browser is blocking site storage (private browsing or blocked
+    cookies/site data). Allow it for this site, then reload.`;
   document.body.prepend(banner);
 }
 
+/* Async so callers don't change if storage moves somewhere slower later. */
 async function saveAlbums() {
-  const response = await fetch(API_URL, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(ALBUMS),
-  });
-  if (!response.ok) {
-    const { error } = await response.json().catch(() => ({}));
-    throw new Error(error || `Save failed (server error ${response.status})`);
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(ALBUMS));
+  } catch (err) {
+    throw new Error(`This browser wouldn't save your ratings (${err.name}).`);
   }
 }
 

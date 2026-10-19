@@ -513,18 +513,10 @@
   .score-input input[type="range"] { flex-basis: 100%; }
 }
 
-/* Shown when the local server isn't running */
-.server-warning {
+/* Shown when browser storage is blocked */
+.storage-warning {
   padding: 0.9rem var(--gutter);
   background: var(--tier-bad);
   color: #fff;
   text-align: center;
-}
-
-.server-warning a { color: #fff; text-decoration: underline; }
-
-.server-warning code {
-  padding: 0.1em 0.4em;
-  background: rgb(0 0 0 / 0.25);
-  border-radius: 4px;
 }
