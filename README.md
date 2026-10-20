@@ -7,15 +7,10 @@ so you can install it to your home screen and browse your ratings offline.
 
 ## Run it
 
-From the project folder:
+It's a static site with no server code: open `index.html` in a browser.
 
-```sh
-python3 server.py        # opens http://localhost:8000 — Ctrl+C to stop
-```
-
-The server uses only Python's standard library, so there's nothing to install.
-It just serves the files: you can also open `index.html` directly, but
-installing as an app and offline mode need the server.
+Installing as an app and offline mode need the site served over HTTPS (or
+`localhost`), which the Pi setup below provides.
 
 ## Rate a song
 
@@ -41,21 +36,23 @@ Installing as an app and offline mode only work over HTTPS (or on
 devices signed in to your Tailscale account.
 
 1. Flash **Raspberry Pi OS Lite** with Raspberry Pi Imager. In its settings,
-   set a username, your Wi-Fi, and enable SSH. Python 3 is already included.
-2. Copy the site over from this folder (replace `pi` with your username):
+   set a username, your Wi-Fi, and enable SSH. Then SSH in
+   (`ssh <username>@raspberrypi.local`).
+2. Clone the site:
 
    ```sh
-   rsync -av --delete --exclude .git --exclude data \
-     ./ pi@raspberrypi.local:song-ratings/
+   sudo mkdir -p /var/www/song_rating
+   sudo chown $USER:$USER /var/www/song_rating
+   git clone https://github.com/JoeKanaan05/Song-Rating.git /var/www/song_rating
    ```
 
-3. Run it on boot. If your username isn't `pi`, first edit `User=` and the
-   paths in `deploy/song-ratings.service`. Then SSH in
-   (`ssh pi@raspberrypi.local`) and run:
+3. Serve it with nginx:
 
    ```sh
-   sudo cp ~/song-ratings/deploy/song-ratings.service /etc/systemd/system/
-   sudo systemctl enable --now song-ratings
+   sudo apt install nginx
+   sudo cp /var/www/song_rating/deploy/nginx.conf /etc/nginx/sites-available/song-rating
+   sudo ln -s /etc/nginx/sites-available/song-rating /etc/nginx/sites-enabled/
+   sudo nginx -t && sudo systemctl reload nginx
    ```
 
 4. Add HTTPS with Tailscale:
@@ -71,9 +68,9 @@ devices signed in to your Tailscale account.
    Tailscale on your phone, open that address, and add it to your Home Screen.
    To make the site public instead, use `sudo tailscale funnel --bg 8000`.
 
-To update the site later, run the `rsync` command again. No restart is needed.
-If you add or rename files, add them to `SITE_FILES` in `sw.js` and bump
-`CACHE_VERSION`.
+To update the site, run `git pull` in `/var/www/song_rating`. nginx serves the
+new files straight away. If you add or rename files, add them to `SITE_FILES`
+in `sw.js` and bump `CACHE_VERSION`.
 
 ## Structure
 
@@ -85,11 +82,10 @@ If you add or rename files, add them to `SITE_FILES` in `sw.js` and bump
 ├── song.html           One song (song.html?album=<album-id>&track=<number>)
 ├── add.html            Search the catalog and rate a song
 ├── about.html          About you and your rating scale
-├── server.py           Serves the site (locally or on the Pi)
 ├── manifest.webmanifest  App name, icons, colours for installing
 ├── sw.js               Service worker: offline support + artwork cache
 ├── deploy/
-│   └── song-ratings.service  systemd service for the Pi
+│   └── nginx.conf      nginx site config for the Pi
 ├── css/
 │   ├── base.css        Colours/tokens, reset, typography
 │   ├── layout.css      Header, footer, page grids, responsive breakpoints
