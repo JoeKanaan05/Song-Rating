@@ -100,10 +100,10 @@
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 10px 30px rgb(0 0 0 / 0.18);
 }
 
-.tier-great { background-color: var(--tier-great); color: var(--on-tier-great); }
-.tier-good  { background-color: var(--tier-good);  color: var(--on-tier-good); }
-.tier-okay  { background-color: var(--tier-okay);  color: var(--on-tier-okay); }
-.tier-bad   { background-color: var(--tier-bad);   color: var(--on-tier-bad); }
+.tier-great { background-color: var(--tier-great); color: var(--on-tier); }
+.tier-good  { background-color: var(--tier-good);  color: var(--on-tier); }
+.tier-okay  { background-color: var(--tier-okay);  color: var(--on-tier); }
+.tier-bad   { background-color: var(--tier-bad);   color: var(--on-tier); }
 /* Unrated: an outline, so it never reads as a low score */
 .tier-none  {
   background-color: transparent;
