@@ -9,18 +9,27 @@
 
 main.container {
   flex: 1;
-  padding-block: 2.5rem 4rem;
+  padding-block: 2rem 4rem;
+  animation: rise-in 0.6s var(--ease) both;
 }
 
-/* Header */
+/* Header: a floating Liquid Glass capsule */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--bg-translucent);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 0.5px solid var(--border);
+  padding: 10px var(--gutter) 0;
+}
+
+.site-header .header-inner {
+  max-width: calc(var(--max-width) - 2 * var(--gutter));
+  padding-inline: 8px;
+  background-color: var(--glass-strong);
+  background-image: var(--glass-sheen);
+  border-radius: 999px;
+  box-shadow: var(--glass-edge), var(--glass-shadow);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
 }
 
 .header-inner {
@@ -35,22 +44,24 @@ main.container {
   display: flex;
   align-items: center;
   gap: 0.55rem;
+  padding-left: 2px;
   color: var(--text);
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.15rem;
+  font-weight: 700;
+  font-size: 1.1rem;
   letter-spacing: -0.02em;
 }
 
 .logo-mark {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 7px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   background: linear-gradient(180deg, #fb5c74, #fa233b);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 2px 8px rgb(250 35 59 / 0.35);
   color: #fff;
-  font-size: 1rem;
+  font-size: 1.1rem;
 }
 
 .nav {
@@ -60,19 +71,29 @@ main.container {
 }
 
 .nav-link {
-  color: var(--text-muted);
-  padding: 0.35em 0.8em;
-  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 0.45em 0.95em;
+  border-radius: 999px;
   font-weight: 500;
-  transition: color 0.15s, background 0.15s;
+  opacity: 0.75;
+  transition: background var(--dur) var(--ease), opacity var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
 }
 
-.nav-link:hover { color: var(--text); }
-.nav-link.active { color: var(--text); background: var(--fill); font-weight: 600; }
+.nav-link:hover { opacity: 1; background: var(--surface); }
+.nav-link:active { transform: scale(0.94); }
+
+/* Selected tab sits in its own little glass lens */
+.nav-link.active {
+  opacity: 1;
+  font-weight: 600;
+  background: var(--surface-hover);
+  box-shadow: var(--glass-edge);
+}
 
 /* Footer */
 .site-footer {
-  border-top: 0.5px solid var(--border);
+  border-top: 0.5px solid var(--separator);
   color: var(--text-muted);
   font-size: 0.8rem;
 }
@@ -90,7 +111,7 @@ main.container {
   padding-block: 0.5rem 2.5rem;
 }
 
-.hero h1 { font-size: clamp(2.1rem, 5vw, 3rem); font-weight: 800; letter-spacing: -0.03em; }
+.hero h1 { font-size: clamp(2.1rem, 5vw, 3rem); font-weight: 800; letter-spacing: -0.025em; }
 
 .hero-sub {
   color: var(--text-muted);
@@ -106,7 +127,7 @@ main.container {
 
 .sidebar {
   position: sticky;
-  top: 80px;
+  top: 90px;
 }
 
 .section-head,
@@ -147,6 +168,6 @@ main.container {
 
 @media (max-width: 480px) {
   .logo-text { display: none; }
-  .nav-link { padding: 0.35em 0.5em; }
+  .nav-link { padding: 0.45em 0.6em; }
   .album-grid { grid-template-columns: repeat(2, 1fr); gap: 1.25rem 0.75rem; }
 }

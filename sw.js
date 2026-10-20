@@ -9,7 +9,7 @@
  * Bump CACHE_VERSION when you add or rename files in SITE_FILES.
  */
 
-const CACHE_VERSION = "1792481218";
+const CACHE_VERSION = "1792481737";
 const SITE_CACHE = `site-${CACHE_VERSION}`;
 const ART_CACHE = "artwork";
 const MAX_ARTWORK = 300;
