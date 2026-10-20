@@ -126,8 +126,7 @@ main.container {
   font-weight: 600;
   letter-spacing: 0;
   opacity: 0.8;
-  transition: background var(--dur) var(--ease), color var(--dur-fast) var(--ease),
-    transform var(--dur-fast) var(--ease);
+  transition: opacity var(--dur-fast) var(--ease);
 }
 
 .tab svg {
@@ -140,7 +139,7 @@ main.container {
   stroke-linejoin: round;
 }
 
-.tab:active { transform: scale(0.9); }
+.tab:active { opacity: 0.5; }
 
 .tab.active {
   opacity: 1;
@@ -252,6 +251,12 @@ main.container {
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     view-transition-name: tab-bar;
+  }
+
+  /* While typing, the keyboard covers the bottom like in iOS apps, so the
+     tab bar hides instead of riding up above the keyboard. */
+  body:has(input:not([type="range"]):focus, textarea:focus) .tab-bar {
+    display: none;
   }
 
   .hero { padding-top: 0; }

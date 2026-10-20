@@ -153,9 +153,22 @@ function blockPinchZoom() {
   document.addEventListener("gesturestart", (event) => event.preventDefault());
 }
 
+/* Like iOS search screens: scrolling the results closes the keyboard. */
+function dismissKeyboardOnScroll() {
+  document.addEventListener(
+    "touchmove",
+    () => {
+      const field = document.activeElement;
+      if (field && field.matches('input[type="search"]')) field.blur();
+    },
+    { passive: true }
+  );
+}
+
 // Scripts load at the end of <body>, so the header can render right away
 // instead of popping in after the page has painted.
 renderHeader();
 blockPinchZoom();
+dismissKeyboardOnScroll();
 whenReady(renderFooter);
 window.addEventListener("load", registerServiceWorker);

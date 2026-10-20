@@ -12,7 +12,7 @@
  * Add new or renamed files to SITE_FILES.
  */
 
-const CACHE_VERSION = "1792483189";
+const CACHE_VERSION = "1792489607";
 const SITE_CACHE = `site-${CACHE_VERSION}`;
 const ART_CACHE = "artwork";
 const MAX_ARTWORK = 300;
