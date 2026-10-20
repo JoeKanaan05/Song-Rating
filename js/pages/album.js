@@ -67,7 +67,7 @@ whenReady(() => {
     if (!confirm(message)) return;
     try {
       await removeAlbum(album.id);
-      window.location.href = "albums.html";
+      navigate("albums.html");
     } catch (err) {
       alert(`Could not save: ${err.message}`);
     }

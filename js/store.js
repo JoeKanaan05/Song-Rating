@@ -30,11 +30,16 @@ const storeReady = Promise.resolve().then(loadAlbums).catch((err) => {
   throw err;
 });
 
-/* Runs a page's setup once the page has loaded and the ratings are in. */
+/* Runs a page's setup once the page has loaded and the ratings are in.
+   When js/nav.js swaps pages in place, the page is already loaded, so the
+   setup runs straight away. */
 function whenReady(setup) {
-  document.addEventListener("DOMContentLoaded", () => {
-    storeReady.then(setup, () => {});
-  });
+  const run = () => storeReady.then(setup, () => {});
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", run);
+  } else {
+    run();
+  }
 }
 
 function showStorageWarning() {

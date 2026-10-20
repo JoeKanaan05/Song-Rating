@@ -21,6 +21,7 @@ whenReady(() => {
   /* ---------- Search ---------- */
 
   async function runSearch(term) {
+    if (!searchInput.isConnected) return; // left the page before the timer fired
     const id = ++searchId;
     history.replaceState(null, "", term ? `add.html?q=${encodeURIComponent(term)}` : "add.html");
 
@@ -192,7 +193,7 @@ whenReady(() => {
             .map((t) => t.trim())
             .filter(Boolean),
         });
-        window.location.href = songURL(stored.id, number);
+        navigate(songURL(stored.id, number));
       } catch (err) {
         alert(`Could not save: ${err.message}`);
         submitButton.disabled = false;
@@ -206,7 +207,7 @@ whenReady(() => {
         if (!confirm(`Remove your rating for "${track.title}"?`)) return;
         try {
           await clearTrackRating(album.id, number);
-          window.location.href = songURL(album.id, number);
+          navigate(songURL(album.id, number));
         } catch (err) {
           alert(`Could not save: ${err.message}`);
         }

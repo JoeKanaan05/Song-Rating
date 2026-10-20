@@ -25,13 +25,20 @@ function currentSection() {
   return page === "album.html" || page === "song.html" ? "albums.html" : page;
 }
 
-function renderHeader() {
+/* Highlights the current page in the top nav and tab bar. */
+function setActiveNav() {
   const current = currentSection();
+  document.querySelectorAll(".nav-link, .nav-add, .tab").forEach((link) => {
+    const active = link.getAttribute("href") === current;
+    link.classList.toggle("active", active);
+    if (active) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  });
+}
+
+function renderHeader() {
   const links = NAV_LINKS.map(
-    (link) =>
-      `<a href="${link.href}" class="nav-link${
-        link.href === current ? " active" : ""
-      }">${link.label}</a>`
+    (link) => `<a href="${link.href}" class="nav-link">${link.label}</a>`
   ).join("");
 
   document.getElementById("site-header").innerHTML = `
@@ -42,17 +49,13 @@ function renderHeader() {
       </a>
       <nav class="nav">
         ${links}
-        <a href="add.html" class="button button-primary nav-add${
-          current === "add.html" ? " active" : ""
-        }">+ Add new</a>
+        <a href="add.html" class="button button-primary nav-add">+ Add new</a>
       </nav>
     </div>`;
 
   const tabs = TAB_LINKS.map(
     (tab) => `
-      <a href="${tab.href}" class="tab${tab.href === current ? " active" : ""}"${
-        tab.href === current ? ' aria-current="page"' : ""
-      }>
+      <a href="${tab.href}" class="tab">
         <svg viewBox="0 0 24 24" aria-hidden="true">${tab.icon}</svg>
         <span>${tab.label}</span>
       </a>`
@@ -61,6 +64,7 @@ function renderHeader() {
     "beforeend",
     `<nav class="tab-bar" aria-label="Main">${tabs}</nav>`
   );
+  setActiveNav();
 }
 
 function renderFooter() {

@@ -101,6 +101,7 @@ lines in step 3 that use `cp` and `nginx -t`).
 │   ├── api.js          iTunes Search API: song search + album lookup
 │   ├── utils.js        Helpers: album stats, sorting, formatting, URLs
 │   ├── components.js   Shared header/footer + card/row/badge renderers
+│   ├── nav.js          In-app navigation: swaps pages without reloading
 │   └── pages/
 │       ├── home.js
 │       ├── albums.js
@@ -113,5 +114,5 @@ lines in step 3 that use `cp` and `nginx -t`).
 ```
 
 Scripts load in this order on every page: `store.js` → (`api.js` on the add
-page) → `utils.js` → `components.js` → the page script.
+page) → `utils.js` → `components.js` → `nav.js` → the page script.
 
