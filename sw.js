@@ -1,19 +1,22 @@
 /*
- * Service worker: makes the site installable and usable offline.
+ * Service worker: makes the site installable, instant, and usable offline.
  *
- * - Site files (HTML/CSS/JS/icons): network first, so edits show up straight
- *   away; falls back to the cached copy when offline or the server is down.
+ * - Site files (HTML/CSS/JS/icons): served straight from the cache, so
+ *   switching pages doesn't wait on the Pi. The pre-commit hook changes
+ *   CACHE_VERSION on every commit; when the browser sees the new sw.js it
+ *   downloads a fresh copy of SITE_FILES and drops the old cache.
  * - Album artwork from Apple's servers: cache first, since covers never change.
- * - iTunes search requests aren't touched; searching needs a connection.
+ * - iTunes search (direct, or through the Pi's /itunes/ proxy) is never
+ *   cached; searching needs a connection.
  *
- * Bump CACHE_VERSION when you add or rename files in SITE_FILES.
+ * Add new or renamed files to SITE_FILES.
  */
 
-const CACHE_VERSION = "1792481737";
+const CACHE_VERSION = "1792483189";
 const SITE_CACHE = `site-${CACHE_VERSION}`;
 const ART_CACHE = "artwork";
 const MAX_ARTWORK = 300;
-const NETWORK_TIMEOUT_MS = 3000;
+const ITUNES_PROXY_PATH = new URL("itunes/", self.registration.scope).pathname;
 
 const SITE_FILES = [
   "./",
@@ -44,7 +47,10 @@ const SITE_FILES = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(SITE_CACHE).then((cache) => cache.addAll(SITE_FILES))
+    caches
+      .open(SITE_CACHE)
+      // "reload" skips the browser's HTTP cache so the new version is fetched.
+      .then((cache) => cache.addAll(SITE_FILES.map((url) => new Request(url, { cache: "reload" }))))
   );
   self.skipWaiting();
 });
@@ -70,25 +76,23 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
 
   if (url.origin === self.location.origin) {
-    event.respondWith(networkFirst(request));
+    if (url.pathname.startsWith(ITUNES_PROXY_PATH)) return;
+    event.respondWith(siteFile(request));
   } else if (request.destination === "image" && url.hostname.endsWith(".mzstatic.com")) {
     event.respondWith(cacheFirst(request));
   }
 });
 
-async function networkFirst(request) {
+async function siteFile(request) {
   const cache = await caches.open(SITE_CACHE);
-  try {
-    const response = await withTimeout(fetch(request), NETWORK_TIMEOUT_MS);
-    if (response.ok) cache.put(stripQuery(request), response.clone());
-    return response;
-  } catch (err) {
-    // Pages read everything from the query string in JS, so album.html?id=x
-    // can be served from the cached album.html.
-    const cached = await cache.match(request, { ignoreSearch: true });
-    if (cached) return cached;
-    throw err;
-  }
+  // Pages read everything from the query string in JS, so album.html?id=x
+  // is served from the cached album.html.
+  const cached = await cache.match(request, { ignoreSearch: true });
+  if (cached) return cached;
+
+  const response = await fetch(request);
+  if (response.ok) cache.put(stripQuery(request), response.clone());
+  return response;
 }
 
 async function cacheFirst(request) {
@@ -113,14 +117,4 @@ function stripQuery(request) {
   const url = new URL(request.url);
   url.search = "";
   return url.href;
-}
-
-function withTimeout(promise, ms) {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error("Network timeout")), ms);
-    promise.then(
-      (value) => { clearTimeout(timer); resolve(value); },
-      (err) => { clearTimeout(timer); reject(err); }
-    );
-  });
 }

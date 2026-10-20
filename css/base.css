@@ -34,6 +34,9 @@
   --glass-shadow: 0 8px 30px rgb(0 0 0 / 0.08), 0 1px 3px rgb(0 0 0 / 0.06);
   --glass-blur: blur(28px) saturate(190%);
 
+  /* Behind the phone's status bar (its text is always white in the app) */
+  --status-scrim: linear-gradient(rgb(0 0 0 / 0.32), rgb(0 0 0 / 0.08));
+
   --tier-great: #34c759;
   --tier-good: #a4cf3c;
   --tier-okay: #ff9f0a;
@@ -87,6 +90,8 @@
       inset 0 0 0 0.5px rgb(255 255 255 / 0.12);
     --glass-shadow: 0 10px 40px rgb(0 0 0 / 0.55);
 
+    --status-scrim: rgb(0 0 0 / 0.55);
+
     --tier-great: #30d158;
     --tier-good: #a8d64a;
     --tier-okay: #ffb340;
@@ -99,6 +104,16 @@
 *::after {
   box-sizing: border-box;
 }
+
+/* App feel: no scroll bars, no pinch / double-tap zoom, no text inflation */
+html {
+  scrollbar-width: none;
+  touch-action: pan-x pan-y;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+::-webkit-scrollbar { display: none; }
 
 body {
   margin: 0;
@@ -114,6 +129,23 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
+  overflow-x: clip;
+}
+
+/* Frosted strip under the phone's status bar when installed as an app.
+   Its height is 0 everywhere else. */
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  height: env(safe-area-inset-top);
+  pointer-events: none;
+  background: var(--status-scrim);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 /* Soft color glow behind everything, so the glass has something to refract */
@@ -143,6 +175,12 @@ h3 { font-size: 1rem; font-weight: 600; letter-spacing: -0.01em; }
 
 p { margin: 0 0 1em; }
 
+/* No long-press link previews or image save menus */
+a,
+img {
+  -webkit-touch-callout: none;
+}
+
 a {
   color: var(--accent);
   text-decoration: none;
@@ -154,10 +192,11 @@ img {
   display: block;
 }
 
-/* Glass capsule fields */
+/* Glass capsule fields. 16px text stops iPhones zooming in on focus. */
 input,
 select {
   font: inherit;
+  font-size: 16px;
   color: var(--text);
   background-color: var(--glass);
   background-image: var(--glass-sheen);
@@ -165,8 +204,6 @@ select {
   border-radius: 999px;
   padding: 0.65em 1.15em;
   box-shadow: var(--glass-edge), var(--glass-shadow);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
   transition: box-shadow var(--dur) var(--ease), background-color var(--dur) var(--ease);
 }
 
@@ -195,10 +232,16 @@ button:focus-visible {
 
 .muted { color: var(--text-muted); }
 
-/* Gentle rise when a page opens */
-@keyframes rise-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: none; }
+/* Smooth cross-fade between pages, like switching tabs in an app.
+   The header and tab bar have their own names so they stay put. */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.22s;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {

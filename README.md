@@ -46,7 +46,8 @@ devices signed in to your Tailscale account.
    git clone https://github.com/JoeKanaan05/Song-Rating.git /var/www/song_rating
    ```
 
-3. Serve it with nginx:
+3. Serve it with nginx. The config also passes song searches through to
+   Apple, because Apple redirects iPhones' searches to the Music app:
 
    ```sh
    sudo apt install nginx
@@ -68,9 +69,14 @@ devices signed in to your Tailscale account.
    Tailscale on your phone, open that address, and add it to your Home Screen.
    To make the site public instead, use `sudo tailscale funnel --bg 8000`.
 
-To update the site, run `git pull` in `/var/www/song_rating`. nginx serves the
-new files straight away. If you add or rename files, add them to `SITE_FILES`
-in `sw.js` and bump `CACHE_VERSION`.
+To update the site, run `git pull` in `/var/www/song_rating`. The installed
+app keeps its own copy of the site so pages open instantly. The pre-commit
+hook changes `CACHE_VERSION` in `sw.js` on every commit, which tells the app to
+download the new version. It shows up the next time you switch pages. If you
+add or rename files, add them to `SITE_FILES` in `sw.js`.
+
+If `deploy/nginx.conf` changed, copy it again and reload nginx (the two `sudo`
+lines in step 3 that use `cp` and `nginx -t`).
 
 ## Structure
 

@@ -4,9 +4,16 @@
  *
  * Requests use JSONP (a <script> tag with a callback) so they work even when
  * the site is opened straight from disk, where normal fetch() is blocked.
+ *
+ * itunes.apple.com/search redirects iPhones to the Music app, so when the site
+ * is served (e.g. from the Pi) requests go through the server's /itunes/ proxy
+ * first (see deploy/nginx.conf), then fall back to Apple directly.
  */
 
-const ITUNES_BASE = "https://itunes.apple.com";
+const ITUNES_DIRECT = "https://itunes.apple.com";
+const ITUNES_BASES =
+  window.location.protocol === "file:" ? [ITUNES_DIRECT] : ["itunes", ITUNES_DIRECT];
+
 let jsonpCounter = 0;
 
 function jsonp(url, timeoutMs = 10000) {
@@ -37,6 +44,18 @@ function jsonp(url, timeoutMs = 10000) {
   });
 }
 
+async function itunesRequest(pathAndQuery) {
+  let lastError;
+  for (const base of ITUNES_BASES) {
+    try {
+      return await jsonp(`${base}/${pathAndQuery}`);
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError;
+}
+
 function largeArtwork(url) {
   return url ? url.replace(/\/\d+x\d+bb\./, "/600x600bb.") : "";
 }
@@ -51,8 +70,9 @@ function formatDuration(ms) {
 
 /* Search songs by any mix of title / artist / album. */
 async function searchSongs(term) {
-  const url = `${ITUNES_BASE}/search?media=music&entity=song&limit=25&term=${encodeURIComponent(term)}`;
-  const data = await jsonp(url);
+  const data = await itunesRequest(
+    `search?media=music&entity=song&limit=25&term=${encodeURIComponent(term)}`
+  );
   return data.results
     .filter((r) => r.wrapperType === "track" && r.collectionId)
     .map((r) => ({
@@ -69,8 +89,7 @@ async function searchSongs(term) {
 
 /* Full album with its complete tracklist, in the shape used by store.js. */
 async function fetchAlbum(collectionId) {
-  const url = `${ITUNES_BASE}/lookup?entity=song&limit=200&id=${collectionId}`;
-  const data = await jsonp(url);
+  const data = await itunesRequest(`lookup?entity=song&limit=200&id=${collectionId}`);
   const info = data.results.find((r) => r.wrapperType === "collection");
   if (!info) throw new Error("Album not found in the catalog.");
 

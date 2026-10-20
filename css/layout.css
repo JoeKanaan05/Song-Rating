@@ -4,13 +4,14 @@
   width: 100%;
   max-width: var(--max-width);
   margin: 0 auto;
-  padding-inline: var(--gutter);
+  /* Keep clear of the notch in landscape */
+  padding-left: max(var(--gutter), env(safe-area-inset-left));
+  padding-right: max(var(--gutter), env(safe-area-inset-right));
 }
 
 main.container {
   flex: 1;
   padding-block: 2rem 4rem;
-  animation: rise-in 0.6s var(--ease) both;
 }
 
 /* Header: a floating Liquid Glass capsule */
@@ -18,12 +19,14 @@ main.container {
   position: sticky;
   top: 0;
   z-index: 10;
-  padding: 10px var(--gutter) 0;
+  padding: calc(10px + env(safe-area-inset-top)) max(var(--gutter), env(safe-area-inset-right)) 0
+    max(var(--gutter), env(safe-area-inset-left));
+  view-transition-name: site-header;
 }
 
 .site-header .header-inner {
   max-width: calc(var(--max-width) - 2 * var(--gutter));
-  padding-inline: 8px;
+  padding: 0 8px;
   background-color: var(--glass-strong);
   background-image: var(--glass-sheen);
   border-radius: 999px;
@@ -91,6 +94,61 @@ main.container {
   box-shadow: var(--glass-edge);
 }
 
+/* Tap targets behave like app controls: no text selection on press */
+.site-header,
+.tab-bar,
+.button,
+.song-row,
+.track-row,
+.album-card,
+.stat {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Phone tab bar: a floating Liquid Glass capsule, like iOS 26 */
+.tab-bar {
+  display: none;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  height: 54px;
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  opacity: 0.8;
+  transition: background var(--dur) var(--ease), color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
+}
+
+.tab svg {
+  width: 25px;
+  height: 25px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tab:active { transform: scale(0.9); }
+
+.tab.active {
+  opacity: 1;
+  color: var(--accent);
+  background: var(--surface-hover);
+  box-shadow: var(--glass-edge);
+}
+
 /* Footer */
 .site-footer {
   border-top: 0.5px solid var(--separator);
@@ -127,7 +185,7 @@ main.container {
 
 .sidebar {
   position: sticky;
-  top: 90px;
+  top: calc(90px + env(safe-area-inset-top));
 }
 
 .section-head,
@@ -166,8 +224,39 @@ main.container {
   .sidebar { position: static; }
 }
 
+/* Phones: the top bar becomes a bottom tab bar, like an iOS app */
+@media (max-width: 640px) {
+  .site-header,
+  .site-footer { display: none; }
+
+  main.container {
+    padding-top: calc(env(safe-area-inset-top) + 1.25rem);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 100px);
+  }
+
+  .tab-bar {
+    position: fixed;
+    z-index: 20;
+    left: max(14px, env(safe-area-inset-left));
+    right: max(14px, env(safe-area-inset-right));
+    bottom: max(12px, calc(env(safe-area-inset-bottom) - 6px));
+    display: flex;
+    gap: 2px;
+    max-width: 440px;
+    margin: 0 auto;
+    padding: 5px;
+    border-radius: 999px;
+    background-color: var(--glass-strong);
+    background-image: var(--glass-sheen);
+    box-shadow: var(--glass-edge), var(--glass-shadow);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    view-transition-name: tab-bar;
+  }
+
+  .hero { padding-top: 0; }
+}
+
 @media (max-width: 480px) {
-  .logo-text { display: none; }
-  .nav-link { padding: 0.45em 0.6em; }
   .album-grid { grid-template-columns: repeat(2, 1fr); gap: 1.25rem 0.75rem; }
 }
