@@ -43,7 +43,7 @@ function renderHeader() {
   document.getElementById("site-header").innerHTML = `
     <div class="container header-inner">
       <a href="index.html" class="logo">
-        <span class="logo-mark">♪</span>
+        <img class="logo-mark" src="assets/icon.svg" alt="">
         <span class="logo-text">${SITE_NAME}</span>
       </a>
       <nav class="nav">

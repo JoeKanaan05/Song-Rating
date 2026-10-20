@@ -109,8 +109,9 @@ lines in step 3 that use `cp` and `nginx -t`).
 │       ├── song.js
 │       └── add.js
 └── assets/
-    ├── favicon.svg
-    └── icons/          App icons (192, 512, Apple touch icon)
+    ├── icon.svg        App icon (also the header logo and browser tab icon)
+    └── icons/          favicon.ico, PNG app icons (192, 512, maskable 512),
+                        Apple touch icon
 ```
 
 Scripts load in this order on every page: `store.js` → (`api.js` on the add

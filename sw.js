@@ -12,7 +12,7 @@
  * Add new or renamed files to SITE_FILES.
  */
 
-const CACHE_VERSION = "1792490743";
+const CACHE_VERSION = "1792492347";
 const SITE_CACHE = `site-${CACHE_VERSION}`;
 const ART_CACHE = "artwork";
 const MAX_ARTWORK = 300;
@@ -40,9 +40,11 @@ const SITE_FILES = [
   "js/pages/album.js",
   "js/pages/song.js",
   "js/pages/add.js",
-  "assets/favicon.svg",
+  "assets/icon.svg",
+  "assets/icons/favicon.ico",
   "assets/icons/icon-192.png",
   "assets/icons/icon-512.png",
+  "assets/icons/icon-maskable-512.png",
   "assets/icons/apple-touch-icon.png",
 ];
 
