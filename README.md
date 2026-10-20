@@ -108,3 +108,4 @@ in `sw.js` and bump `CACHE_VERSION`.
 
 Scripts load in this order on every page: `store.js` → (`api.js` on the add
 page) → `utils.js` → `components.js` → the page script.
+
