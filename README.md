@@ -1,42 +1,78 @@
 # Song Ratings
 
-A website for my personal song reviews, organised by album. Plain HTML, CSS
-and JavaScript, with no build step. Songs come from Apple's iTunes catalog;
-ratings are saved in your browser, so each device keeps its own. It's a PWA,
-so you can install it to your home screen and browse your ratings offline.
+A personal website for rating songs, organised by album. Search any song in
+Apple's catalog, rate it out of 10, and browse your ratings by album, artist
+or score.
 
-## Run it
+It's plain HTML, CSS and JavaScript with no frameworks, no build step and no
+backend. Ratings live in your browser. It's also a PWA, so you can install it
+to your home screen and browse your ratings offline.
 
-It's a static site with no server code: open `index.html` in a browser.
+## Features
 
-Installing as an app and offline mode need the site served over HTTPS (or
-`localhost`), which the Pi setup below provides.
+- **Search and rate any song.** Songs and album artwork come from the free
+  [iTunes Search API](https://performance-partners.apple.com/search-api); no
+  API key or account needed.
+- **Full albums.** Rating one song pulls in the album's complete tracklist,
+  so you can work through the rest of it.
+- **Stats at a glance.** The home page shows recently rated albums and your
+  top-rated songs. Album averages are colour-coded by tier.
+- **Browse your library.** Search, filter by genre, and sort albums by
+  average rating, title, artist, release year or most recently rated.
+- **Suggestions.** The Add page suggests unrated tracks from albums you've
+  started, plus songs by your highest-rated artists.
+- **Backup and restore.** Export your ratings as JSON and import them on
+  another device.
+- **Installable and offline.** It works as an app on iPhone, Android and
+  desktop, with light and dark themes.
 
-## Rate a song
+## Getting started
 
-Click **+ Add new**, search for any song, and pick it. The full album
-(cover + complete tracklist) is pulled from the iTunes Search API and saved,
-so unrated tracks show up too. Rate other tracks from the album or song page.
+```sh
+git clone https://github.com/JoeKanaan05/Song-Rating.git
+cd Song-Rating
+```
 
-Every change is saved in this browser's storage (`localStorage`). Ratings stay
-on the device: a different browser, device, or web address (e.g. `localhost`
-vs. the Pi) starts empty. Use **Export backup** on the Albums page to download
-a copy, and **Import** to load it on another device. Export regularly: clearing
-your browser's site data deletes your ratings.
+Open `index.html` in a browser and you're ready to go. Song search works
+straight from disk.
 
-On iPhone, add the site to your Home Screen; Safari may clear storage for
-sites you haven't visited in a while, but not for installed apps.
+Installing as an app and offline mode only work over HTTPS or on
+`localhost`. To test them locally, serve the folder:
 
-## Put it on a Raspberry Pi (Zero 2 W)
+```sh
+python3 -m http.server 8000
+# then open http://localhost:8000
+```
 
-Installing as an app and offline mode only work over HTTPS (or on
-`localhost`), so the Pi needs HTTPS. The easiest way is
-[Tailscale](https://tailscale.com), which gives the Pi a private
-`https://<name>.<tailnet>.ts.net` address that works from anywhere on
-devices signed in to your Tailscale account.
+### Make it yours
+
+- Edit `about.html` to write your intro and describe your rating scale.
+- The rating tiers (9–10, 7–8.9, 5–6.9, 0–4.9) are set in `ratingTier()` in
+  `js/utils.js` and coloured by the `.tier-*` classes in `css/components.css`.
+- Theme colours are CSS variables at the top of `css/base.css`.
+- The app name and icons are in `manifest.webmanifest` and `assets/`.
+
+## Where your ratings are stored
+
+Everything is saved in your browser's `localStorage`, and nothing is sent to
+a server. Each browser, device and web address keeps its own ratings, so
+`localhost` and your deployed site start out separate.
+
+- Use **Export backup** on the Albums page to download a copy, and **Import**
+  to load it somewhere else.
+- Export regularly: clearing your browser's site data deletes your ratings.
+- On iPhone, add the site to your Home Screen. Safari may clear storage for
+  sites you haven't visited in a while, but it won't clear installed apps.
+
+## Self-hosting on a Raspberry Pi
+
+Any static host works, but these steps run it on a Raspberry Pi (tested on a
+Zero 2 W). [Tailscale](https://tailscale.com) gives the Pi a private
+`https://<name>.<tailnet>.ts.net` address that works from anywhere on devices
+signed in to your Tailscale account.
 
 1. Flash **Raspberry Pi OS Lite** with Raspberry Pi Imager. In its settings,
-   set a username, your Wi-Fi, and enable SSH. Then SSH in
+   set a username and your Wi-Fi and enable SSH, then SSH in
    (`ssh <username>@raspberrypi.local`).
 2. Clone the site:
 
@@ -46,8 +82,8 @@ devices signed in to your Tailscale account.
    git clone https://github.com/JoeKanaan05/Song-Rating.git /var/www/song_rating
    ```
 
-3. Serve it with nginx. The config also passes song searches through to
-   Apple, because Apple redirects iPhones' searches to the Music app:
+3. Serve it with nginx. The config also sends song searches through the Pi,
+   because Apple redirects searches from iPhones to the Music app:
 
    ```sh
    sudo apt install nginx
@@ -65,55 +101,66 @@ devices signed in to your Tailscale account.
    ```
 
    In the Tailscale admin console, turn on **MagicDNS** and **HTTPS
-   certificates**. `tailscale serve status` shows the address. Install
+   certificates**. Run `tailscale serve status` to see the address. Install
    Tailscale on your phone, open that address, and add it to your Home Screen.
    To make the site public instead, use `sudo tailscale funnel --bg 8000`.
 
-To update the site, run `git pull` in `/var/www/song_rating`. The installed
-app keeps its own copy of the site so pages open instantly. The pre-commit
-hook changes `CACHE_VERSION` in `sw.js` on every commit, which tells the app to
-download the new version. It shows up the next time you switch pages. If you
-add or rename files, add them to `SITE_FILES` in `sw.js`.
+**Updating:** run `git pull` in `/var/www/song_rating`. If `deploy/nginx.conf`
+changed, repeat the `cp` and `nginx -t` lines from step 3.
 
-If `deploy/nginx.conf` changed, copy it again and reload nginx (the two `sudo`
-lines in step 3 that use `cp` and `nginx -t`).
+## Development
 
-## Structure
+### How updates reach installed apps
+
+The service worker (`sw.js`) caches the whole site so pages open instantly
+and work offline. When `CACHE_VERSION` in `sw.js` changes, installed apps
+download the new version, which shows up the next time you switch pages.
+
+A pre-commit hook bumps `CACHE_VERSION` automatically. Git doesn't copy hooks
+when you clone, so set it up once:
+
+```sh
+cat > .git/hooks/pre-commit <<'EOF'
+#!/bin/bash
+sed -i '' -E "s/const CACHE_VERSION = \"[^\"]*\"/const CACHE_VERSION = \"$(date +%s)\"/" sw.js
+git add sw.js
+EOF
+chmod +x .git/hooks/pre-commit
+```
+
+That `sed -i ''` syntax is for macOS. On Linux, use `sed -i -E ...` instead.
+
+If you add or rename files, add them to `SITE_FILES` in `sw.js`.
+
+### Project structure
 
 ```
 .
-├── index.html          Home: stats, recently rated albums, top-rated songs
-├── albums.html         All albums: search, genre filter, sort
-├── album.html          One album + full tracklist (album.html?id=<album-id>)
-├── song.html           One song (song.html?album=<album-id>&track=<number>)
-├── add.html            Search the catalog and rate a song
-├── about.html          About you and your rating scale
+├── index.html            Home: stats, recently rated albums, top-rated songs
+├── albums.html           All albums: search, genre filter, sort
+├── album.html            One album + full tracklist (album.html?id=<album-id>)
+├── song.html             One song (song.html?album=<album-id>&track=<number>)
+├── add.html              Search the catalog and rate a song
+├── about.html            About you and your rating scale
 ├── manifest.webmanifest  App name, icons, colours for installing
-├── sw.js               Service worker: offline support + artwork cache
+├── sw.js                 Service worker: offline support + artwork cache
 ├── deploy/
-│   └── nginx.conf      nginx site config for the Pi
+│   └── nginx.conf        nginx site config for the Pi
 ├── css/
-│   ├── base.css        Colours/tokens, reset, typography
-│   ├── layout.css      Header, footer, page grids, responsive breakpoints
-│   └── components.css  Cards, badges, covers, tracklist, detail pages
+│   ├── base.css          Colours/tokens, reset, typography
+│   ├── layout.css        Header, footer, page grids, responsive breakpoints
+│   └── components.css    Cards, badges, covers, tracklist, detail pages
 ├── js/
-│   ├── store.js        Loads/saves ratings in localStorage, export/import
-│   ├── api.js          iTunes Search API: song search + album lookup
-│   ├── utils.js        Helpers: album stats, sorting, formatting, URLs
-│   ├── components.js   Shared header/footer + card/row/badge renderers
-│   ├── nav.js          In-app navigation: swaps pages without reloading
-│   └── pages/
-│       ├── home.js
-│       ├── albums.js
-│       ├── album.js
-│       ├── song.js
-│       └── add.js
+│   ├── store.js          Loads/saves ratings in localStorage, export/import
+│   ├── api.js            iTunes Search API: song search + album lookup
+│   ├── utils.js          Helpers: album stats, sorting, formatting, URLs
+│   ├── components.js     Shared header/footer + card/row/badge renderers
+│   ├── nav.js            In-app navigation: swaps pages without reloading
+│   └── pages/            One script per page (home, albums, album, song, add)
 └── assets/
-    ├── icon.svg        App icon (also the header logo and browser tab icon)
-    └── icons/          favicon.ico, PNG app icons (192, 512, maskable 512),
-                        Apple touch icon
+    ├── icon.svg          App icon (also the header logo and browser tab icon)
+    └── icons/            favicon.ico, PNG app icons, Apple touch icon
 ```
 
-Scripts load in this order on every page: `store.js` → (`api.js` on the add
-page) → `utils.js` → `components.js` → `nav.js` → the page script.
-
+Scripts load in this order on every page: `store.js` → `api.js` (Add page
+only) → `utils.js` → `components.js` → `nav.js` → the page script.
