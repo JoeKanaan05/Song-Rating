@@ -126,7 +126,6 @@ main.container {
   font-weight: 600;
   letter-spacing: 0;
   opacity: 0.8;
-  transition: opacity var(--dur-fast) var(--ease);
 }
 
 .tab svg {
@@ -139,7 +138,6 @@ main.container {
   stroke-linejoin: round;
 }
 
-.tab:active { opacity: 0.5; }
 
 .tab.active {
   opacity: 1;

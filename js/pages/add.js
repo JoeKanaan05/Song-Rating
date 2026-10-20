@@ -26,8 +26,7 @@ whenReady(() => {
     history.replaceState(null, "", term ? `add.html?q=${encodeURIComponent(term)}` : "add.html");
 
     if (term.length < 2) {
-      status.textContent = "";
-      results.innerHTML = "";
+      showSuggestions();
       return;
     }
 
@@ -60,6 +59,90 @@ whenReady(() => {
         </div>
         ${badge || `<span class="add-hint">+ Rate</span>`}
       </button>`;
+  }
+
+  /* ---------- Suggestions (shown while the search box is empty) ---------- */
+
+  /* Unrated songs from your best-rated albums that you've started rating. */
+  function finishRatingSuggestions(limit = 6, perAlbum = 2) {
+    const picks = [];
+    ALBUMS.map((album) => ({ album, stats: albumStats(album) }))
+      .filter(({ stats }) => stats.ratedCount > 0 && stats.ratedCount < stats.trackCount)
+      .sort((a, b) => b.stats.average - a.stats.average)
+      .forEach(({ album }) => {
+        album.tracks
+          .map((track, i) => ({ album, track, number: i + 1 }))
+          .filter(({ track }) => !isRated(track))
+          .slice(0, perAlbum)
+          .forEach((pick) => picks.push(pick));
+      });
+    return picks.slice(0, limit);
+  }
+
+  /* Your highest-rated artists, by average song score. */
+  function topArtists(limit = 3) {
+    const scores = new Map();
+    allSongs()
+      .filter(isRated)
+      .forEach((song) => {
+        const entry = scores.get(song.album.artist) || { total: 0, count: 0 };
+        entry.total += song.rating;
+        entry.count += 1;
+        scores.set(song.album.artist, entry);
+      });
+    return [...scores]
+      .sort(([, a], [, b]) => b.total / b.count - a.total / a.count || b.count - a.count)
+      .slice(0, limit)
+      .map(([artist]) => artist);
+  }
+
+  function finishRatingHTML({ album, track, number }) {
+    return `
+      <a class="song-row" href="add.html?album=${encodeURIComponent(album.id)}&track=${number}">
+        ${coverHTML(album, "sm")}
+        <div class="song-row-body">
+          <span class="song-title">${escapeHTML(track.title)}</span>
+          <span class="song-artist">${escapeHTML(album.artist)} · ${escapeHTML(album.title)}</span>
+        </div>
+        <span class="add-hint">Rate</span>
+      </a>`;
+  }
+
+  async function showSuggestions() {
+    const id = ++searchId;
+    status.textContent = "";
+    lastResults = [];
+
+    const finish = finishRatingSuggestions();
+    const finishHTML = finish.length
+      ? `<p class="list-label">Finish rating</p>${finish.map(finishRatingHTML).join("")}`
+      : "";
+    results.innerHTML = finishHTML;
+
+    const artists = topArtists();
+    const groups = await Promise.all(artists.map((name) => songsByArtist(name).catch(() => [])));
+    if (id !== searchId) return; // the user started typing
+
+    const seenTitles = new Set();
+    const artistHTML = artists
+      .map((artist, i) => {
+        const songs = groups[i]
+          .filter((song) => {
+            const key = song.title.toLowerCase();
+            if (savedTrackFor(song) || seenTitles.has(key)) return false;
+            seenTitles.add(key);
+            return true;
+          })
+          .slice(0, 4);
+        if (!songs.length) return "";
+        const rows = songs.map((song) => {
+          lastResults.push(song);
+          return searchResultHTML(song, lastResults.length - 1);
+        });
+        return `<p class="list-label">More from ${escapeHTML(artist)}</p>${rows.join("")}`;
+      })
+      .join("");
+    results.innerHTML = finishHTML + artistHTML;
   }
 
   searchInput.addEventListener("input", () => {
@@ -228,6 +311,8 @@ whenReady(() => {
     if (q) {
       searchInput.value = q;
       runSearch(q);
+    } else {
+      showSuggestions();
     }
   }
 });

@@ -20,14 +20,13 @@ const TAB_LINKS = [
 ];
 
 /* Which tab a page belongs to: album and song pages live under Albums. */
-function currentSection() {
-  const page = window.location.pathname.split("/").pop() || "index.html";
+function sectionFor(pathname) {
+  const page = pathname.split("/").pop() || "index.html";
   return page === "album.html" || page === "song.html" ? "albums.html" : page;
 }
 
-/* Highlights the current page in the top nav and tab bar. */
-function setActiveNav() {
-  const current = currentSection();
+/* Highlights a page's tab in the top nav and tab bar (the current page by default). */
+function setActiveNav(current = sectionFor(window.location.pathname)) {
   document.querySelectorAll(".nav-link, .nav-add, .tab").forEach((link) => {
     const active = link.getAttribute("href") === current;
     link.classList.toggle("active", active);

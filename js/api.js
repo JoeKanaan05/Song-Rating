@@ -68,23 +68,49 @@ function formatDuration(ms) {
   return `${minutes}:${seconds}`;
 }
 
+/* A catalog song result in the shape the Add page uses. */
+function songFromResult(r) {
+  return {
+    trackId: r.trackId,
+    albumSourceId: r.collectionId,
+    title: r.trackName,
+    artist: r.artistName,
+    album: r.collectionName,
+    year: (r.releaseDate || "").slice(0, 4),
+    cover: largeArtwork(r.artworkUrl100),
+    duration: formatDuration(r.trackTimeMillis),
+  };
+}
+
+function isSong(r) {
+  return r.wrapperType === "track" && r.collectionId;
+}
+
 /* Search songs by any mix of title / artist / album. */
 async function searchSongs(term) {
   const data = await itunesRequest(
     `search?media=music&entity=song&limit=25&term=${encodeURIComponent(term)}`
   );
-  return data.results
-    .filter((r) => r.wrapperType === "track" && r.collectionId)
-    .map((r) => ({
-      trackId: r.trackId,
-      albumSourceId: r.collectionId,
-      title: r.trackName,
-      artist: r.artistName,
-      album: r.collectionName,
-      year: (r.releaseDate || "").slice(0, 4),
-      cover: largeArtwork(r.artworkUrl100),
-      duration: formatDuration(r.trackTimeMillis),
-    }));
+  return data.results.filter(isSong).map(songFromResult);
+}
+
+/* Songs by one artist (for suggestions). Kept in memory, since the Add page
+   asks again every time it opens. */
+const artistSongsCache = new Map();
+
+function songsByArtist(name) {
+  if (!artistSongsCache.has(name)) {
+    const request = itunesRequest(
+      `search?media=music&entity=song&attribute=artistTerm&limit=30&term=${encodeURIComponent(name)}`
+    ).then((data) =>
+      data.results
+        .filter((r) => isSong(r) && r.artistName.toLowerCase() === name.toLowerCase())
+        .map(songFromResult)
+    );
+    request.catch(() => artistSongsCache.delete(name));
+    artistSongsCache.set(name, request);
+  }
+  return artistSongsCache.get(name);
 }
 
 /* Full album with its complete tracklist, in the shape used by store.js. */

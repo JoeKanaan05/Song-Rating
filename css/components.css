@@ -208,6 +208,18 @@
 
 #search-results:empty { display: none; }
 
+/* Section label inside a grouped list, e.g. suggestions on the Add page */
+.list-label {
+  margin: 0.75rem 0.6rem 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.list-label:first-child { margin-top: 0.4rem; }
+
 .song-row {
   display: flex;
   align-items: center;
