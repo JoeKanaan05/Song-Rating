@@ -19,9 +19,12 @@ whenReady(() => {
   document.title = `${track.title} by ${album.artist} · ${SITE_NAME}`;
   const rated = isRated(track);
 
-  const tags = (track.tags || [])
-    .map((t) => `<span class="tag">${escapeHTML(t)}</span>`)
-    .join("");
+  const genreChip = album.genre
+    ? `<a class="tag" href="${genreURL(album.genre)}">${escapeHTML(album.genre)}</a>`
+    : "";
+  const tags =
+    genreChip +
+    (track.tags || []).map((t) => `<span class="tag tag-hash">${escapeHTML(t)}</span>`).join("");
 
   const review = track.review
     ? track.review

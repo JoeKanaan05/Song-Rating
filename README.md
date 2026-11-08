@@ -24,7 +24,9 @@ to your home screen and browse your ratings offline.
 - **Backup and restore.** Export your ratings as JSON and import them on
   another device.
 - **Installable and offline.** It works as an app on iPhone, Android and
-  desktop, with light and dark themes.
+  desktop, with light and dark themes (toggle in the sidebar).
+- **Search your library.** The sidebar's search (⌘K / Ctrl+K) finds your
+  saved songs and albums, and hands anything else over to the catalog.
 
 ## Getting started
 
@@ -49,7 +51,8 @@ python3 -m http.server 8000
 - Edit `about.html` to write your intro and describe your rating scale.
 - The rating tiers (9–10, 7–8.9, 5–6.9, 0–4.9) are set in `ratingTier()` in
   `js/utils.js` and coloured by the `.tier-*` classes in `css/components.css`.
-- Theme colours are CSS variables at the top of `css/base.css`.
+- Theme colours are CSS variables at the top of `css/base.css` (light, then
+  dark).
 - The app name and icons are in `manifest.webmanifest` and `assets/`.
 
 ## Where your ratings are stored
@@ -147,20 +150,23 @@ If you add or rename files, add them to `SITE_FILES` in `sw.js`.
 ├── deploy/
 │   └── nginx.conf        nginx site config for the Pi
 ├── css/
-│   ├── base.css          Colours/tokens, reset, typography
-│   ├── layout.css        Header, footer, page grids, responsive breakpoints
+│   ├── base.css          Colours/tokens (light + dark), reset, typography, fields
+│   ├── layout.css        Sidebar / phone top bar, menu drawer, search sheet, page grids
 │   └── components.css    Cards, badges, covers, tracklist, detail pages
 ├── js/
+│   ├── theme.js          Light/dark theme, applied before the page paints
 │   ├── store.js          Loads/saves ratings in localStorage, export/import
 │   ├── api.js            iTunes Search API: song search + album lookup
 │   ├── utils.js          Helpers: album stats, sorting, formatting, URLs
-│   ├── components.js     Shared header/footer + card/row/badge renderers
+│   ├── components.js     Shared sidebar/footer + card/row/badge renderers
+│   ├── ui.js             Theme toggle, phone menu, search sheet
 │   ├── nav.js            In-app navigation: swaps pages without reloading
 │   └── pages/            One script per page (home, albums, album, song, add)
 └── assets/
-    ├── icon.svg          App icon (also the header logo and browser tab icon)
+    ├── icon.svg          App icon (also the browser tab icon)
     └── icons/            favicon.ico, PNG app icons, Apple touch icon
 ```
 
-Scripts load in this order on every page: `store.js` → `api.js` (Add page
-only) → `utils.js` → `components.js` → `nav.js` → the page script.
+Scripts load in this order on every page: `theme.js` (in `<head>`) →
+`store.js` → `api.js` (Add page only) → `utils.js` → `components.js` →
+`ui.js` → `nav.js` → the page script.

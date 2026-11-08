@@ -36,9 +36,10 @@ whenReady(() => {
     <div class="detail-hero">
       ${coverHTML(album, "lg")}
       <div class="detail-hero-info">
-        <p class="eyebrow">Album · ${escapeHTML(album.genre)} · ${album.year}</p>
+        <p class="eyebrow">Album${album.year ? ` · ${album.year}` : ""}</p>
         <h1>${escapeHTML(album.title)}</h1>
         <p class="detail-hero-artist">${escapeHTML(album.artist)}</p>
+        ${album.genre ? `<div class="tags"><a class="tag" href="${genreURL(album.genre)}">${escapeHTML(album.genre)}</a></div>` : ""}
         ${progressHTML(stats.ratedCount, stats.trackCount)}
       </div>
       <div class="detail-hero-score">

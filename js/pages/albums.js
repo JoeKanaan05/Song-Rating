@@ -18,6 +18,10 @@ whenReady(() => {
     .map((g) => `<option value="${escapeHTML(g)}">${escapeHTML(g)}</option>`)
     .join("");
 
+  // albums.html?genre=<name>: opened from a genre chip
+  const genreParam = getQueryParam("genre");
+  if (genres.includes(genreParam)) genreSelect.value = genreParam;
+
   function update() {
     const query = searchInput.value.trim().toLowerCase();
     const genre = genreSelect.value;

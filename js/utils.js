@@ -70,6 +70,11 @@ function albumURL(albumId) {
   return `album.html?id=${encodeURIComponent(albumId)}`;
 }
 
+/* The Albums page filtered to one genre (what a genre chip links to). */
+function genreURL(genre) {
+  return `albums.html?genre=${encodeURIComponent(genre)}`;
+}
+
 /* Every track from every album, each with its album and track number attached. */
 function allSongs() {
   return ALBUMS.flatMap((album) =>

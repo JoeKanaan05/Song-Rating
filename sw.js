@@ -12,7 +12,7 @@
  * Add new or renamed files to SITE_FILES.
  */
 
-const CACHE_VERSION = "1792654024";
+const CACHE_VERSION = "1794138211";
 const SITE_CACHE = `site-${CACHE_VERSION}`;
 const ART_CACHE = "artwork";
 const MAX_ARTWORK = 300;
@@ -30,10 +30,12 @@ const SITE_FILES = [
   "css/base.css",
   "css/layout.css",
   "css/components.css",
+  "js/theme.js",
   "js/store.js",
   "js/api.js",
   "js/utils.js",
   "js/components.js",
+  "js/ui.js",
   "js/nav.js",
   "js/pages/home.js",
   "js/pages/albums.js",
