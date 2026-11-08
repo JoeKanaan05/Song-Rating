@@ -1,14 +1,14 @@
 /* Page structure, ported from the Notes site's layout:
    - desktop / tablet: a powder-blue left sidebar (title, search pill, theme
      button, page list) next to the content column;
-   - phones (≤ 800px): a fixed frosted top bar with a full-screen menu drawer
-     and a full-screen search sheet.
+   - phones (≤ 800px): an iOS-style app with a floating Liquid Glass tab bar
+     at the bottom and a full-screen search sheet (section 7).
    Sidebar markup: renderHeader() in js/components.js. Behaviour: js/ui.js. */
 
 /* Frosted glass. Never put backdrop-filter on an element that contains
    position: fixed children (the sidebar holds the search sheet and the menu
    drawer): it would become their containing block and trap them inside it.
-   The mobile top bar uses a ::before layer instead. */
+   The phone tab bar puts its glass on the capsule inside it instead. */
 
 /* ═════════════ 1. Page grid ═════════════ */
 html {
@@ -73,7 +73,7 @@ body,
 .site-sidebar::before,
 .search-button,
 .darkmode,
-.mobile-explorer,
+.tab-capsule,
 .explorer-content,
 .site-footer,
 .stat,
@@ -166,8 +166,7 @@ body,
 }
 
 .search-button,
-.darkmode,
-.mobile-explorer {
+.darkmode {
   border: 1px solid var(--ui-border);
   background: var(--ui-sheen), var(--ui-surface);
   box-shadow: var(--ui-shadow-sm), var(--ui-highlight);
@@ -277,7 +276,6 @@ body,
   color: var(--ui-faint);
 }
 
-.explorer .mobile-explorer { display: none; }
 
 .explorer-content {
   margin-top: 0.5rem;
@@ -458,13 +456,21 @@ html:has(.search-container.active) {
   border-image: linear-gradient(90deg, transparent, var(--ui-border-strong), transparent) 1;
 }
 
-/* ═════════════ 7. Phones: top bar, menu drawer, search sheet ═════════════ */
+/* ═════════════ 7. Phones: an iOS app ═════════════ */
+/* No top bar and no menu drawer. Each page leads with its large title; a
+   floating Liquid Glass tab bar sits at the bottom (the pages, plus a round
+   search button beside it, like iOS 26); the theme button sits at the top
+   right of the page like a navigation-bar button and scrolls away with it.
+   Search opens as a full-screen sheet. */
+.tab-bar { display: none; }
+
 @media (max-width: 800px) {
-  /* Bar height: 0.6rem padding top and bottom around 2.25rem buttons, plus
-     the notch inset. The page is padded by this much so nothing hides under it. */
   :root {
-    --mobile-bar-h: calc(3.45rem + env(safe-area-inset-top));
-    scroll-padding-top: calc(var(--mobile-bar-h) + 0.75rem);
+    --tabbar-h: 62px;
+    /* Floats just above the home indicator, never flush with the edge */
+    --tabbar-gap: max(12px, calc(env(safe-area-inset-bottom) - 6px));
+    scroll-padding-top: calc(env(safe-area-inset-top) + 1rem);
+    scroll-padding-bottom: calc(var(--tabbar-h) + var(--tabbar-gap) + 1rem);
   }
 
   body {
@@ -473,183 +479,200 @@ html:has(.search-container.active) {
       "warn"
       "main"
       "foot";
-    padding: var(--mobile-bar-h) max(1rem, env(safe-area-inset-right)) 0
+    padding: env(safe-area-inset-top) max(1rem, env(safe-area-inset-right)) 0
       max(1rem, env(safe-area-inset-left));
   }
 
-  main { padding: 1.25rem 0 calc(3rem + env(safe-area-inset-bottom)); }
+  /* Room at the bottom so the last row can scroll clear of the tab bar */
+  main { padding: 1rem 0 calc(var(--tabbar-h) + var(--tabbar-gap) + 2.5rem); }
 
-  .site-footer { padding: 0 0 calc(1.25rem + env(safe-area-inset-bottom)); }
+  /* Apps don't have footers: the tab bar is the bottom of the screen. */
+  .site-footer { display: none; }
 
-  /* Top bar: [menu] [title ……] [search] [theme], frosted glass, fixed to the
-     top. The glass lives on ::before so the search sheet and the drawer
-     (both positioned children) aren't trapped inside the bar. */
+  /* The sidebar steps out of the layout; its pieces are placed one by one. */
   .site-sidebar {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
     z-index: 50;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5rem;
-    height: auto;
-    margin: 0;
-    padding: calc(0.6rem + env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) 0.6rem
-      max(1rem, env(safe-area-inset-left));
+    display: block;
+    height: 0;
+    padding: 0;
     overflow: visible;
-    background: transparent;
-  }
-
-  .site-sidebar::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: var(--ui-sheen), var(--ui-glass);
-    --ui-backdrop: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: var(--ui-backdrop);
-    backdrop-filter: var(--ui-backdrop);
-    border-bottom: 1px solid var(--ui-border);
-    /* Own compositor layer, so the blur doesn't repaint while scrolling */
-    transform: translateZ(0);
   }
 
   .site-sidebar::after { content: none; }
 
-  /* Title takes the free space and truncates instead of pushing buttons. */
-  .page-title {
-    flex: 1 1 auto;
-    min-width: 0;
-    font-size: 1.15rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+  .page-title,
+  .explorer,
+  .search-button { display: none; }
 
-  .toolbar {
-    flex: 0 0 auto;
-    gap: 0.4rem;
-  }
+  .toolbar { display: block; }
 
-  .search { flex: 0 0 auto; }
-
-  /* Search collapses to an icon-only round button. */
-  .search-button {
-    width: 2.25rem;
-    padding: 0;
-    justify-content: center;
-    border-radius: 50%;
-  }
-
-  .search-button > p { display: none; }
-  .search-button svg { margin: 0; }
-
-  .explorer {
-    order: -1;
-    flex: 0 0 auto;
-    margin: 0;
-    overflow: visible;
-  }
-
-  .explorer-title { display: none; }
-
-  /* Menu button: same round style as the toolbar; stays above the drawer so
-     it doubles as the close button. */
-  .explorer .mobile-explorer {
-    display: flex;
-    position: relative;
-    z-index: 101;
-    width: 2.25rem;
-    height: 2.25rem;
-    margin: 0;
-    padding: 0;
-    border-radius: 50%;
-    align-items: center;
-    justify-content: center;
-    color: var(--ui-heading);
-  }
-
-  .mobile-explorer .lucide-menu {
-    width: 18px;
-    height: 18px;
-    stroke: var(--ui-heading);
-  }
-
-  .explorer .mobile-explorer:active { transform: scale(0.92); }
-
-  /* Drawer: a frosted, tinted sheet over the page. */
-  .explorer .explorer-content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 100;
-    width: 100vw;
-    max-width: 100vw;
-    height: 100dvh;
-    max-height: 100dvh;
-    margin-top: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    padding: calc(4.25rem + env(safe-area-inset-top)) 0 0;
-    background-color: var(--ui-drawer-tint);
-    background-image: var(--ui-sheen);
-    background-size: 100% 160px;
-    background-repeat: no-repeat;
-    --ui-backdrop: blur(40px) saturate(160%);
+  /* Liquid Glass: frosted powder tint, lit from above, with a bright rim. */
+  .tab-capsule,
+  .tab-search,
+  .darkmode {
+    border: 1px solid var(--ui-liquid-rim);
+    background: var(--ui-liquid-sheen), var(--ui-glass);
+    --ui-backdrop: blur(24px) saturate(180%);
     -webkit-backdrop-filter: var(--ui-backdrop);
     backdrop-filter: var(--ui-backdrop);
-    box-shadow: var(--ui-highlight);
-    transform: translateX(-100vw);
-    visibility: hidden;
-    transition:
-      transform var(--dur-slow) var(--ease-out),
-      visibility var(--dur-slow) var(--ease-out),
-      background-color var(--dur-slow) var(--ease);
+    box-shadow: var(--ui-liquid-shadow), var(--ui-highlight);
   }
 
-  .explorer:not(.collapsed) > .explorer-content {
-    transform: translateX(0);
-    visibility: visible;
+  .darkmode:hover {
+    border-color: var(--ui-liquid-rim);
+    box-shadow: var(--ui-liquid-shadow), var(--ui-highlight);
   }
 
-  .explorer-content::after { content: none; }
-
-  /* The list scrolls inside the sheet; the page underneath stays put. Its
-     1px overhang keeps it always scrollable, so overscroll stays contained. */
-  .explorer-content > .explorer-ul {
-    position: relative;
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-    padding: 0.25rem max(1rem, env(safe-area-inset-right)) calc(2rem + env(safe-area-inset-bottom))
-      max(1rem, env(safe-area-inset-left));
-  }
-
-  .explorer-content > .explorer-ul::after {
-    content: "";
+  /* Theme button: top right of the page, like a navigation-bar button. */
+  .darkmode {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 1px;
-    height: calc(100% + 1px);
-    pointer-events: none;
+    top: calc(env(safe-area-inset-top) + 1rem);
+    right: max(1rem, env(safe-area-inset-right));
+    width: 2.5rem;
+    height: 2.5rem;
   }
 
-  /* Bigger tap targets (~44px, Apple's guideline). */
-  .explorer-content li > a {
-    padding: 0.6rem 0.75rem;
-    font-size: 1rem;
-    white-space: normal;
+  .darkmode svg {
+    width: 18px;
+    height: 18px;
+    top: calc(50% - 9px);
+    left: calc(50% - 9px);
   }
 
-  /* While the menu is open the page behind can't scroll. */
-  html.mobile-no-scroll { overflow: hidden; }
+  /* Large titles and the back button keep clear of it. */
+  .hero h1,
+  .page-head h1,
+  .prose > h1:first-child { padding-right: 3rem; }
 
-  /* Search: a full-screen, app-style sheet.
+  /* ---------- Tab bar ---------- */
+  .tab-bar {
+    position: fixed;
+    z-index: 10;
+    left: max(14px, env(safe-area-inset-left));
+    right: max(14px, env(safe-area-inset-right));
+    bottom: var(--tabbar-gap);
+    display: flex;
+    gap: 10px;
+    height: var(--tabbar-h);
+    max-width: 520px;
+    margin: 0 auto;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* While typing, the keyboard covers the bottom like in iOS apps, so the
+     tab bar hides instead of riding up above the keyboard. */
+  body:has(input:not([type="range"]):not([type="file"]):focus, textarea:focus, select:focus) .tab-bar {
+    display: none;
+  }
+
+  .tab-capsule {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding: 4px;
+    border-radius: 999px;
+  }
+
+  /* The lens behind the current tab glides to the new tab on a spring. The
+     tab colours switch at once, so two tabs never look selected. */
+  .tab-lens {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc((100% - 8px) / 4);
+    border-radius: 999px;
+    background: var(--ui-liquid-lens);
+    box-shadow: var(--ui-shadow-sm), var(--ui-liquid-lens-edge);
+    transform: translateX(calc(var(--tab-index, 0) * 100%));
+    transition:
+      transform var(--dur-slow) var(--spring),
+      opacity var(--dur) var(--ease);
+  }
+
+  .tab-capsule.no-active .tab-lens { opacity: 0; }
+
+  .tab {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+    border-radius: 999px;
+    color: var(--ui-muted);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+    text-decoration: none;
+  }
+
+  .tab span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tab svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Current tab: tinted poppy, like an iOS app's accent colour */
+  .tab.active { color: var(--ui-accent); }
+  .tab.active svg { stroke-width: 2.1; }
+
+  .tab-search {
+    flex: 0 0 var(--tabbar-h);
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 50%;
+    color: var(--ui-heading);
+    cursor: pointer;
+    transition:
+      transform var(--dur) var(--spring),
+      background-color var(--dur-slow) var(--ease),
+      border-color var(--dur-slow) var(--ease),
+      box-shadow var(--dur-slow) var(--ease);
+  }
+
+  .tab-search svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .tab-search svg .search-path {
+    stroke: currentColor;
+    stroke-width: 1.7px;
+  }
+
+  .tab-search:active,
+  .darkmode:active { transform: scale(0.9); }
+
+  /* ---------- Page transitions (direction set by js/nav.js) ---------- */
+  html[data-nav="push"] main { animation: ios-push-in 440ms var(--ease-ios) backwards; }
+  html[data-nav="pop"] main { animation: ios-pop-in 440ms var(--ease-ios) backwards; }
+  html[data-nav="tab"] main { animation: ui-fade-in 200ms var(--ease) backwards; }
+  html[data-nav="none"] main { animation: none; }
+
+  /* ---------- Search: a full-screen, app-style sheet ----------
        [ search field ………………… ] Cancel
        ┌ results (only this scrolls) ┐
        └─────────────────────────────┘   ← ends above the keyboard

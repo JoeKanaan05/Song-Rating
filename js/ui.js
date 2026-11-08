@@ -2,7 +2,7 @@
  * Sidebar behaviour, ported from the Notes site (Quartz's darkmode, explorer
  * and search plugins, plus its uiBehaviour.ts):
  *   1. the light / dark toggle (applyTheme() is in js/theme.js);
- *   2. the phone menu drawer;
+ *   2. the phone tab bar: tapping the current tab scrolls back to the top;
  *   3. the search sheet: searches your saved songs and albums, with a row
  *      that hands the search over to the catalog on the Add page;
  *   4. phone-only search extras: the Cancel button, keeping the sheet's
@@ -34,30 +34,29 @@
     applyTheme(event.matches ? "dark" : "light", { save: true });
   });
 
-  /* ---------- 2. Phone menu drawer ---------- */
+  /* ---------- 2. Phone tab bar ---------- */
 
-  const explorer = document.querySelector(".explorer");
-  const menuButton = explorer.querySelector(".mobile-explorer");
-
-  function setMenuOpen(open) {
-    explorer.classList.toggle("collapsed", !open);
-    menuButton.setAttribute("aria-expanded", String(open));
-    root.classList.toggle("mobile-no-scroll", open);
-  }
-
-  const menuIsOpen = () => !explorer.classList.contains("collapsed");
-
-  menuButton.addEventListener("click", () => setMenuOpen(!menuIsOpen()));
-
-  // Choosing a page closes the menu; js/nav.js swaps the page in underneath.
-  explorer.querySelector(".explorer-content").addEventListener("click", (event) => {
-    if (event.target.closest("a")) setMenuOpen(false);
+  // Tapping the tab you're already on scrolls back to the top, like iOS.
+  // (From an album or song page it goes back to the Albums list instead.)
+  document.querySelector(".tab-capsule").addEventListener("click", (event) => {
+    const tab = event.target.closest(".tab");
+    if (!tab) return;
+    const page = window.location.pathname.split("/").pop() || "index.html";
+    if (page === tab.getAttribute("href") && !window.location.search) {
+      event.preventDefault(); // js/nav.js skips links that are already handled
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   });
+
+  // iPhone Safari only shows :active (press) styles when a touch listener
+  // exists. This one does nothing else; it's passive, so scrolling stays smooth.
+  document.addEventListener("touchstart", () => {}, { passive: true });
 
   /* ---------- 3. Search sheet ---------- */
 
   const MAX_RESULTS = 30;
   const searchButton = document.querySelector(".search-button");
+  const tabSearchButton = document.querySelector(".tab-search");
   const sheet = document.querySelector(".search-container");
   const field = sheet.querySelector(".search-bar");
   const layout = sheet.querySelector(".search-layout");
@@ -68,7 +67,6 @@
 
   function openSearch() {
     if (searchIsOpen()) return;
-    setMenuOpen(false);
     sheet.classList.add("active");
     field.focus(); // during the tap, so iPhones open the keyboard
     syncSheetToViewport();
@@ -81,7 +79,7 @@
     field.blur();
     showResults("");
     syncSheetToViewport();
-    if (restoreFocus) searchButton.focus({ preventScroll: true });
+    if (restoreFocus) (phone.matches ? tabSearchButton : searchButton).focus({ preventScroll: true });
   }
 
   /* Accents and case don't matter: "beyonce" finds "Beyoncé". */
@@ -222,6 +220,7 @@
   }
 
   searchButton.addEventListener("click", openSearch);
+  tabSearchButton.addEventListener("click", openSearch);
   field.addEventListener("input", () => showResults(field.value));
 
   field.addEventListener("keydown", (event) => {
@@ -265,26 +264,14 @@
       event.preventDefault();
       if (searchIsOpen()) closeSearch({ restoreFocus: true });
       else openSearch();
-    } else if (event.key === "Escape") {
-      if (searchIsOpen()) {
-        event.preventDefault();
-        closeSearch({ restoreFocus: true });
-      } else if (menuIsOpen()) {
-        setMenuOpen(false);
-        menuButton.focus({ preventScroll: true });
-      }
+    } else if (event.key === "Escape" && searchIsOpen()) {
+      event.preventDefault();
+      closeSearch({ restoreFocus: true });
     }
   });
 
-  window.addEventListener("popstate", () => {
-    closeSearch();
-    setMenuOpen(false);
-  });
-
-  phone.addEventListener("change", () => {
-    setMenuOpen(false);
-    syncSheetToViewport();
-  });
+  window.addEventListener("popstate", () => closeSearch());
+  phone.addEventListener("change", syncSheetToViewport);
 
   /* ---------- 4. Phone search sheet ---------- */
 

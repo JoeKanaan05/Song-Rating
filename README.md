@@ -24,7 +24,8 @@ to your home screen and browse your ratings offline.
 - **Backup and restore.** Export your ratings as JSON and import them on
   another device.
 - **Installable and offline.** It works as an app on iPhone, Android and
-  desktop, with light and dark themes (toggle in the sidebar).
+  desktop, with light and dark themes. On phones it looks and moves like an
+  iOS app: a floating glass tab bar, large titles, and pages that slide in.
 - **Search your library.** The sidebar's search (⌘K / Ctrl+K) finds your
   saved songs and albums, and hands anything else over to the catalog.
 
@@ -151,7 +152,7 @@ If you add or rename files, add them to `SITE_FILES` in `sw.js`.
 │   └── nginx.conf        nginx site config for the Pi
 ├── css/
 │   ├── base.css          Colours/tokens (light + dark), reset, typography, fields
-│   ├── layout.css        Sidebar / phone top bar, menu drawer, search sheet, page grids
+│   ├── layout.css        Desktop sidebar, phone tab bar, search sheet, page grids
 │   └── components.css    Cards, badges, covers, tracklist, detail pages
 ├── js/
 │   ├── theme.js          Light/dark theme, applied before the page paints
@@ -159,7 +160,7 @@ If you add or rename files, add them to `SITE_FILES` in `sw.js`.
 │   ├── api.js            iTunes Search API: song search + album lookup
 │   ├── utils.js          Helpers: album stats, sorting, formatting, URLs
 │   ├── components.js     Shared sidebar/footer + card/row/badge renderers
-│   ├── ui.js             Theme toggle, phone menu, search sheet
+│   ├── ui.js             Theme toggle, phone tab bar, search sheet
 │   ├── nav.js            In-app navigation: swaps pages without reloading
 │   └── pages/            One script per page (home, albums, album, song, add)
 └── assets/

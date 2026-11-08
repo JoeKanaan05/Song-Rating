@@ -489,13 +489,31 @@ img.cover {
 
 /* ═════════════ 11. Album & song detail pages ═════════════ */
 
-/* Back link: small and quiet, like the Notes breadcrumbs */
+/* Back link: small and quiet, like the Notes breadcrumbs, with an iOS-style
+   chevron (on phones it grows into an iOS back button, section 15). */
 .back-link {
   display: inline-block;
+  max-width: 100%;
   margin-bottom: 1rem;
   color: var(--ui-muted);
   font-size: 0.85rem;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
+.back-link::before {
+  content: "";
+  display: inline-block;
+  width: 0.55em;
+  height: 0.95em;
+  margin-right: 0.4em;
+  vertical-align: -0.1em;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 18'%3E%3Cpath d='M8.5 1.5 1.5 9l7 7.5' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 18'%3E%3Cpath d='M8.5 1.5 1.5 9l7 7.5' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 .back-link:hover { color: var(--ui-heading); }
@@ -804,6 +822,63 @@ a.tag:hover {
 @container main (max-width: 440px) {
   .score-input { flex-wrap: wrap; }
   .score-input input[type="range"] { flex-basis: 100%; }
+}
+
+/* Where list separators start on phones (iOS insets them to the text) */
+.song-row { --sep-inset: 4.5rem; }
+.home-aside .song-row { --sep-inset: 6.8rem; }
+.track-row { --sep-inset: 3.95rem; }
+
+@container main (max-width: 640px) {
+  .track-row { --sep-inset: 3.2rem; }
+}
+
+/* ═════════════ 15. Phones: iOS details ═════════════ */
+@media (max-width: 800px) {
+  /* Title, then subtitle and actions below it, like an iOS large title */
+  .page-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  /* iOS back button: chevron + previous page, 17pt, level with the theme
+     button on the right (which it keeps clear of). */
+  .back-link {
+    max-width: calc(100% - 3.25rem);
+    margin-bottom: 0.5rem;
+    color: var(--ui-link);
+    font-size: 1.0625rem;
+    line-height: 2.5rem;
+  }
+
+  .back-link:active { opacity: 0.45; }
+
+  /* Inset separators: rows divide at the text, not the artwork */
+  .song-row,
+  .track-row,
+  .results-container .result-card {
+    position: relative;
+    border-bottom: none;
+  }
+
+  .song-row::after,
+  .track-row::after,
+  .results-container .result-card::after {
+    content: "";
+    position: absolute;
+    left: var(--sep-inset);
+    right: 0;
+    bottom: 0;
+    border-bottom: 1px solid var(--ui-border);
+    pointer-events: none;
+  }
+
+  .results-container .result-card { --sep-inset: 4.125rem; }
+
+  .song-row:last-child::after,
+  .track-row:last-child::after,
+  .results-container .result-card:last-child::after { content: none; }
 }
 
 /* Shown when browser storage is blocked */

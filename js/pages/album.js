@@ -32,7 +32,7 @@ whenReady(() => {
     : "";
 
   container.innerHTML = `
-    <a href="albums.html" class="back-link">← All albums</a>
+    <a href="albums.html" class="back-link">All albums</a>
     <div class="detail-hero">
       ${coverHTML(album, "lg")}
       <div class="detail-hero-info">

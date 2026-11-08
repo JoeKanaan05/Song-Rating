@@ -96,6 +96,22 @@
   /* Behind the phone's status bar when installed (its text is always white). */
   --ui-status-scrim: linear-gradient(rgba(22, 23, 26, 0.32), rgba(22, 23, 26, 0.08));
 
+  /* iOS navigation curve: fast start, long soft settle. */
+  --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Liquid Glass (phone tab bar and round buttons): the powder glass tint,
+     lit from above, with a bright rim. The lens marks the current tab. */
+  --ui-liquid-sheen: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.65),
+    rgba(255, 255, 255, 0.12) 55%,
+    rgba(255, 255, 255, 0.24)
+  );
+  --ui-liquid-rim: rgba(255, 255, 255, 0.6);
+  --ui-liquid-shadow: 0 10px 30px rgba(22, 23, 26, 0.14), 0 2px 6px rgba(22, 23, 26, 0.08);
+  --ui-liquid-lens: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(243, 250, 251, 0.72));
+  --ui-liquid-lens-edge: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 0.5px rgba(22, 23, 26, 0.06);
+
   color-scheme: light;
 }
 
@@ -154,7 +170,18 @@
   --ui-icon-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 19.9 19.7'%3E%3Cg fill='none' stroke='%2393a9ae' stroke-width='1.5'%3E%3Cpath stroke-linecap='square' d='M18.5 18.3l-5.4-5.4'/%3E%3Ccircle cx='8' cy='8' r='7'/%3E%3C/g%3E%3C/svg%3E");
   --ui-icon-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2393a9ae' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 
-  --ui-status-scrim: none;
+  --ui-status-scrim: rgba(22, 23, 26, 0.55);
+
+  --ui-liquid-sheen: linear-gradient(
+    180deg,
+    rgba(176, 224, 230, 0.14),
+    rgba(176, 224, 230, 0.03) 55%,
+    rgba(176, 224, 230, 0.07)
+  );
+  --ui-liquid-rim: rgba(176, 224, 230, 0.14);
+  --ui-liquid-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --ui-liquid-lens: linear-gradient(180deg, rgba(176, 224, 230, 0.18), rgba(176, 224, 230, 0.08));
+  --ui-liquid-lens-edge: inset 0 1px 0 rgba(176, 224, 230, 0.18), inset 0 0 0 0.5px rgba(176, 224, 230, 0.1);
 
   color-scheme: dark;
 }
@@ -204,8 +231,10 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Frosted strip under the phone's status bar when installed as an app.
-   Its height is 0 everywhere else. Sits above the mobile top bar. */
+/* Installed as an app, pages scroll under the phone's status bar, so it gets
+   a frosted edge that fades out below it (iOS's scroll-edge effect). The
+   tint keeps the status bar's white text readable in light mode. Its height
+   is 0 everywhere else (no status-bar inset). */
 body::after {
   content: "";
   position: fixed;
@@ -213,9 +242,14 @@ body::after {
   left: 0;
   right: 0;
   z-index: 60;
-  height: env(safe-area-inset-top);
+  height: calc(env(safe-area-inset-top) * 1.35);
   pointer-events: none;
   background: var(--ui-status-scrim);
+  --ui-backdrop: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: var(--ui-backdrop);
+  backdrop-filter: var(--ui-backdrop);
+  -webkit-mask-image: linear-gradient(#000 70%, transparent);
+  mask-image: linear-gradient(#000 70%, transparent);
 }
 
 ::selection {
@@ -423,7 +457,8 @@ textarea {
     height: 0;
   }
 
-  h1 { font-size: 1.9rem; }
+  /* iOS large titles (34pt) */
+  h1 { font-size: 2.125rem; }
   h2 { font-size: 1.35rem; }
 }
 
@@ -453,6 +488,37 @@ textarea {
   from {
     opacity: 0;
     transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Phones: iOS navigation. Going deeper (album → song) slides the new page in
+   from the right, going back slides it in from the left; switching tabs
+   cross-fades. js/nav.js picks the direction (html[data-nav]). */
+@keyframes ios-push-in {
+  from {
+    opacity: 0;
+    transform: translateX(32%);
+  }
+  40% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ios-pop-in {
+  from {
+    opacity: 0;
+    transform: translateX(-24%);
+  }
+  40% {
+    opacity: 1;
   }
   to {
     opacity: 1;

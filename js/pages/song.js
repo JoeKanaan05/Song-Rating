@@ -42,7 +42,7 @@ whenReady(() => {
     </nav>`;
 
   container.innerHTML = `
-    <a href="${albumURL(album.id)}" class="back-link">← ${escapeHTML(album.title)}</a>
+    <a href="${albumURL(album.id)}" class="back-link">${escapeHTML(album.title)}</a>
     <div class="detail-hero">
       ${coverHTML(album, "lg")}
       <div class="detail-hero-info">

@@ -6,12 +6,12 @@
 
 const SITE_NAME = "Song Ratings";
 
-/* The page list in the sidebar (and in the phone menu). */
+/* The pages: a list in the desktop sidebar, a tab bar on phones. */
 const NAV_LINKS = [
-  { href: "index.html", label: "Home" },
-  { href: "albums.html", label: "Albums" },
-  { href: "add.html", label: "Add new" },
-  { href: "about.html", label: "About" },
+  { href: "index.html", label: "Home", tab: "Home", icon: '<path d="M3.5 10.5 12 3.5l8.5 7V20a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/>' },
+  { href: "albums.html", label: "Albums", tab: "Albums", icon: '<rect x="3" y="7" width="14" height="14" rx="2.5"/><path d="M7 3.5h11a2.5 2.5 0 0 1 2.5 2.5v11"/>' },
+  { href: "add.html", label: "Add new", tab: "Add", icon: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>' },
+  { href: "about.html", label: "About", tab: "About", icon: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.5v.01"/>' },
 ];
 
 /* Which page a URL belongs to: album and song pages live under Albums. */
@@ -20,14 +20,22 @@ function sectionFor(pathname) {
   return page === "album.html" || page === "song.html" ? "albums.html" : page;
 }
 
-/* Gives a page's link the "current page" pill (the current page by default). */
+/* Marks a page as current (the current page by default): the pill in the
+   sidebar, and the tab with the lens behind it on phones. */
 function setActiveNav(current = sectionFor(window.location.pathname)) {
-  document.querySelectorAll(".nav-link").forEach((link) => {
+  document.querySelectorAll(".nav-link, .tab").forEach((link) => {
     const active = link.getAttribute("href") === current;
     link.classList.toggle("active", active);
     if (active) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
+
+  const capsule = document.querySelector(".tab-capsule");
+  if (capsule) {
+    const index = NAV_LINKS.findIndex((link) => link.href === current);
+    capsule.classList.toggle("no-active", index === -1);
+    if (index !== -1) capsule.style.setProperty("--tab-index", index);
+  }
 }
 
 /* Icons from the Notes site (Quartz search, darkmode and explorer). */
@@ -49,19 +57,20 @@ const MOON_ICON = `
     <path d="M96.76,66.458c-0.853-0.852-2.15-1.064-3.23-0.534c-6.063,2.991-12.858,4.571-19.655,4.571C62.022,70.495,50.88,65.88,42.5,57.5C29.043,44.043,25.658,23.536,34.076,6.47c0.532-1.08,0.318-2.379-0.534-3.23c-0.851-0.852-2.15-1.064-3.23-0.534c-4.918,2.427-9.375,5.619-13.246,9.491c-9.447,9.447-14.65,22.008-14.65,35.369c0,13.36,5.203,25.921,14.65,35.368s22.008,14.65,35.368,14.65c13.361,0,25.921-5.203,35.369-14.65c3.872-3.871,7.064-8.328,9.491-13.246C97.826,68.608,97.611,67.309,96.76,66.458z"/>
   </svg>`;
 
-const MENU_ICON = `
-  <svg class="lucide-menu" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <line x1="4" x2="20" y1="12" y2="12"/>
-    <line x1="4" x2="20" y1="6" y2="6"/>
-    <line x1="4" x2="20" y1="18" y2="18"/>
-  </svg>`;
-
-/* The sidebar (a frosted top bar on phones):
-   title · [search pill][theme] · page list. */
+/* The sidebar: title · [search pill][theme] · page list. On phones only the
+   theme button stays (top right of the page) and the tab bar takes over:
+   the pages in a glass capsule, plus a round search button. */
 function renderHeader() {
   const links = NAV_LINKS.map(
     (link) => `<li><a href="${link.href}" class="nav-link">${link.label}</a></li>`
+  ).join("");
+
+  const tabs = NAV_LINKS.map(
+    (link) => `
+      <a href="${link.href}" class="tab">
+        <svg viewBox="0 0 24 24" aria-hidden="true">${link.icon}</svg>
+        <span>${link.tab}</span>
+      </a>`
   ).join("");
 
   document.getElementById("site-header").innerHTML = `
@@ -91,15 +100,21 @@ function renderHeader() {
       </button>
     </div>
 
-    <nav class="explorer collapsed" aria-label="Main">
-      <button type="button" class="mobile-explorer" aria-label="Menu"
-              aria-expanded="false" aria-controls="explorer-content">
-        ${MENU_ICON}
-      </button>
+    <nav class="explorer" aria-label="Main">
       <h2 class="explorer-title">Browse</h2>
-      <div class="explorer-content" id="explorer-content">
+      <div class="explorer-content">
         <ul class="explorer-ul">${links}</ul>
       </div>
+    </nav>
+
+    <nav class="tab-bar" aria-label="Tabs">
+      <div class="tab-capsule">
+        <span class="tab-lens" aria-hidden="true"></span>
+        ${tabs}
+      </div>
+      <button type="button" class="tab-search" aria-label="Search your songs" aria-haspopup="dialog">
+        ${SEARCH_ICON}
+      </button>
     </nav>`;
 
   setActiveNav();

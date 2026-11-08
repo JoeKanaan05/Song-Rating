@@ -8,6 +8,25 @@
 const pageCache = new Map(); // path -> Promise of the page's HTML
 const pageHTML = new Map(); // path -> HTML, once loaded (readable during a tap)
 let keyboardStandIn = null;
+let currentURL = new URL(window.location.href);
+
+/* On phones pages move like an iOS app (css/layout.css, section 7): a deeper
+   page (album → song) slides in from the right, going back slides in from
+   the left, and switching tabs cross-fades. Depth: lists 0, album 1, song 2. */
+function depthOf(url) {
+  const page = url.pathname.split("/").pop();
+  return { "album.html": 1, "song.html": 2 }[page] || 0;
+}
+
+function directionFor(from, to, push) {
+  // Back/forward through history: on iPhones that's the edge swipe, which
+  // already plays Safari's own slide, so the page just swaps in.
+  if (!push) return "none";
+  const change = depthOf(to) - depthOf(from);
+  if (change > 0) return "push";
+  if (change < 0 && sectionFor(from.pathname) === sectionFor(to.pathname)) return "pop";
+  return "tab";
+}
 
 /* Pages read their query string in JS, so album.html?id=x is just album.html. */
 function fetchPage(url) {
@@ -102,6 +121,9 @@ async function navigate(href, { push = true } = {}) {
       history.pushState({ scrollY: 0 }, "", url.href);
     }
     document.title = doc.title;
+    // Set before the new <main> goes in, so it enters with the right animation.
+    document.documentElement.dataset.nav = directionFor(currentURL, url, push);
+    currentURL = url;
     document.querySelector("main").replaceWith(document.adoptNode(main));
     setActiveNav();
     await runPageScripts(doc);
